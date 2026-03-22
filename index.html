@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Batarelle J2" />
+<meta name="theme-color" content="#3D5A3E" />
+<meta name="description" content="Gestion de la copropriété Batarelle J2" />
+<link rel="manifest" href="./manifest.json" />
+<title>Batarelle J2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #F5F3EE;
+    --surface: #FDFCFA;
+    --surface2: #EFEDE8;
+    --border: rgba(60,50,30,0.12);
+    --border-strong: rgba(60,50,30,0.22);
+    --text: #1C1A16;
+    --text-muted: #7A7468;
+    --text-hint: #B0ACA4;
+    --green: #2D6A4F;
+    --green-bg: #D8EDDF;
+    --red: #9B2226;
+    --red-bg: #F8DCDD;
+    --amber: #7D4E00;
+    --amber-bg: #FCEFD3;
+    --blue: #1D4E89;
+    --blue-bg: #D6E4F7;
+    --accent: #3D5A3E;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 90px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .logo-icon {
+    width: 48px; height: 48px; background: var(--accent);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px;
+  }
+  .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--accent); }
+  .logo-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .year-nav {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border-radius: var(--radius-lg);
+    padding: 8px 20px; border: 1px solid var(--border-strong);
+  }
+  .year-nav button {
+    width: 44px; height: 44px; border-radius: 10px;
+    border: 1px solid var(--border-strong); background: var(--surface);
+    cursor: pointer; font-size: 24px; color: var(--accent); font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .year-nav button:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: scale(1.08); }
+  .year-nav button:active { transform: scale(0.96); }
+  .year-nav .year-display {
+    font-size: 52px; font-weight: 700; min-width: 130px; text-align: center;
+    font-family: 'DM Mono', monospace; color: var(--accent); letter-spacing: -3px;
+    line-height: 1;
+  }
+
+  /* LAYOUT */
+  .layout { display: flex; min-height: calc(100vh - 90px); }
+
+  /* SIDEBAR NAV */
+  aside {
+    width: 200px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px 12px;
+    position: sticky; top: 90px;
+    height: calc(100vh - 90px);
+    overflow-y: auto;
+  }
+  .nav-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 1px;
+    color: var(--text-muted); text-transform: uppercase;
+    padding: 0 8px; margin-bottom: 6px; margin-top: 16px;
+  }
+  .nav-label:first-child { margin-top: 0; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    font-size: 13px; color: var(--text-muted);
+    transition: all 0.15s; margin-bottom: 2px;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--surface2); color: var(--text); font-weight: 500; }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+  /* MAIN */
+  main { flex: 1; padding: 28px 32px; max-width: 1100px; overflow-x: hidden; }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; }
+  .page-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* METRIC CARDS */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+  }
+  .metric-label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .metric-value { font-size: 26px; font-weight: 600; letter-spacing: -1px; font-family: 'DM Mono', monospace; }
+  .metric-value.green { color: var(--green); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.blue { color: var(--blue); }
+  .metric-value.amber { color: var(--amber); }
+
+  /* TABLE */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .table-card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-card-title { font-size: 13px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    padding: 10px 14px; text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+    color: var(--text-muted); text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(0,0,0,0.015); }
+
+  /* CHECKBOX */
+  .check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--green); }
+
+  /* BADGES */
+  .badge {
+    display: inline-block; padding: 3px 9px;
+    border-radius: 20px; font-size: 11px; font-weight: 500;
+  }
+  .badge.ok { background: var(--green-bg); color: var(--green); }
+  .badge.late { background: var(--red-bg); color: var(--red); }
+  .badge.partial { background: var(--amber-bg); color: var(--amber); }
+  .badge.blue { background: var(--blue-bg); color: var(--blue); }
+
+  /* BUTTONS */
+  .btn {
+    padding: 8px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border-strong); background: transparent;
+    cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--text); transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .btn.primary:hover { background: #2e4530; }
+  .btn.sm { padding: 5px 10px; font-size: 12px; }
+  .btn.danger { color: var(--red); border-color: var(--red-bg); }
+  .btn.danger:hover { background: var(--red-bg); }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* FORM / MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,8,5,0.4); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius-lg);
+    border: 1px solid var(--border-strong); padding: 24px;
+    width: 380px; max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 18px; }
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); margin-bottom: 5px; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; padding: 8px 12px;
+    border-radius: var(--radius); border: 1px solid var(--border-strong);
+    background: var(--bg); color: var(--text);
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    transition: border 0.15s;
+  }
+  .form-row input:focus, .form-row select:focus { outline: none; border-color: var(--accent); }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+  /* MONTANT ROW */
+  .montant-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .montant-row label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .montant-row input {
+    width: 70px; padding: 6px 10px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--bg); color: var(--text); font-size: 13px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ============================================================
+     MOBILE — Design moderne adapté téléphone
+     ============================================================ */
+
+  /* Navigation mobile — barre du bas façon app native */
+  @media (max-width: 640px) {
+
+    /* Header compact */
+    header {
+      height: 60px;
+      padding: 0 16px;
+    }
+    .logo-icon { width: 36px; height: 36px; font-size: 18px; border-radius: 9px; }
+    .logo-text { font-size: 17px; }
+    .logo-sub { display: none; }
+    .year-nav {
+      padding: 5px 12px;
+      gap: 8px;
+      border-radius: 12px;
+    }
+    .year-nav button {
+      width: 34px; height: 34px;
+      font-size: 18px; border-radius: 8px;
+    }
+    .year-nav .year-display {
+      font-size: 32px;
+      min-width: 90px;
+      letter-spacing: -2px;
+    }
+
+    /* Layout */
+    .layout { min-height: calc(100vh - 60px); }
+    aside { display: none; }
+    main {
+      padding: 12px 12px 80px 12px; /* espace pour la nav du bas */
+      max-width: 100%;
+    }
+
+    /* Nav mobile en bas — style app native */
+    .mobile-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 8px 4px env(safe-area-inset-bottom);
+      z-index: 100;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    .mobile-nav button {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      border: none; background: none; cursor: pointer;
+      padding: 4px 2px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 9px;
+      font-weight: 500;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .mobile-nav button::before {
+      font-size: 20px;
+      display: block;
+      line-height: 1.2;
+    }
+    .mobile-nav button[data-tab="dashboard"]::before    { content: "⊞"; }
+    .mobile-nav button[data-tab="cotisations"]::before  { content: "✓"; font-size: 18px; }
+    .mobile-nav button[data-tab="depenses"]::before     { content: "💳"; }
+    .mobile-nav button[data-tab="habitants"]::before    { content: "👤"; }
+    .mobile-nav button[data-tab="menage"]::before       { content: "🧹"; }
+    .mobile-nav button[data-tab="tarifs"]::before       { content: "⚙"; font-size: 18px; }
+    .mobile-nav button[data-tab="comptabilite"]::before { content: "📊"; }
+    .mobile-nav button.active {
+      color: var(--accent);
+    }
+    .mobile-nav button.active::before {
+      transform: scale(1.15);
+    }
+
+    /* Page header */
+    .page-header {
+      flex-wrap: wrap; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .page-title { font-size: 18px; }
+
+    /* Cards grille responsive */
+    .cards-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* Metric cards */
+    .metric-card { padding: 12px 14px; }
+    .metric-value { font-size: 22px; }
+
+    /* Tables — scroll horizontal */
+    .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 500px; }
+    th, td { padding: 8px 10px; font-size: 12px; }
+
+    /* Buttons */
+    .btn { padding: 10px 14px; font-size: 13px; }
+    .btn.primary { padding: 10px 16px; }
+
+    /* Modal plein écran sur mobile */
+    .modal-overlay { align-items: flex-end; }
+    .modal {
+      width: 100%; max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 32px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Cotisations — cartes mobiles */
+    #cotTable { display: none; }
+    #cotMobileCards { display: block; }
+    .cot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .cot-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .cot-card-name { font-size: 15px; font-weight: 700; }
+    .cot-months-grid {
+      display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px;
+    }
+    .cot-month-cell {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .cot-month-label {
+      font-size: 8px; color: var(--text-muted);
+      font-weight: 700; text-transform: uppercase;
+    }
+    .cot-month-cell input[type=checkbox] {
+      width: 22px; height: 22px;
+      accent-color: var(--green); cursor: pointer;
+    }
+    .cot-month-cell.inactive { opacity: 0.2; pointer-events: none; }
+
+    /* Dashboard grid */
+    #dashContent > div > div { grid-template-columns: 1fr !important; }
+
+    /* Planning ménage — scroll */
+    #tab-menage .table-card { overflow-x: auto; }
+
+    /* Habitants — inputs full width */
+    #habBody input, #habBody select {
+      font-size: 14px !important;
+      padding: 8px 10px !important;
+    }
+  }
+
+  /* Tablette */
+  @media (min-width: 641px) and (max-width: 900px) {
+    .mobile-nav { display: none; }
+    #cotMobileCards { display: none; }
+    main { padding: 20px; }
+    .cards-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Desktop */
+  @media (min-width: 901px) {
+    .mobile-nav { display: none; }
+    #cotMobileCards { display: none; }
+  }
+
+  .empty-state {
+    text-align: center; padding: 32px;
+    color: var(--text-muted); font-size: 13px;
+  }
+  .delete-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 14px; padding: 2px 6px;
+    border-radius: 4px; transition: all 0.12s;
+  }
+  .delete-btn:hover { color: var(--red); background: var(--red-bg); }
+
+  .solde-pos { color: var(--green); font-weight: 600; font-family: 'DM Mono', monospace; }
+  .solde-neg { color: var(--red); font-weight: 600; font-family: 'DM Mono', monospace; }
+  .mono { font-family: 'DM Mono', monospace; }
+
+  @media print {
+    @page { margin: 1.2cm; size: A4 landscape; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    /* ---- Masquer TOUT par défaut ---- */
+    body > * { display: none !important; }
+
+    /* ---- BILAN ---- */
+    body.print-bilan .layout { display: block !important; }
+    body.print-bilan main    { display: block !important; padding: 0; }
+    body.print-bilan #tab-comptabilite { display: block !important; }
+    body.print-bilan .section { display: none !important; }
+    body.print-bilan #tab-comptabilite { display: block !important; }
+    body.print-bilan #printHeader { display: block !important; margin-bottom: 18px; }
+    body.print-bilan #printHeaderTop { border-bottom: 3px solid #3D5A3E; padding-bottom: 12px; margin-bottom: 6px; }
+    body.print-bilan .page-header, body.print-bilan .btn, body.print-bilan #comptCards, body.print-bilan #comptSoldeFinal { display: none !important; }
+    body.print-bilan #comptBilan { display: block !important; margin-bottom: 12px; }
+    body.print-bilan #comptBilan > div { border: 1px solid #ccc !important; border-radius: 0 !important; }
+    body.print-bilan #comptBilan table { border-collapse: collapse; width: 100%; font-size: 11px; }
+    body.print-bilan #comptBilan td { padding: 5px 10px !important; font-size: 11px !important; border-bottom: 1px solid #eee; }
+    body.print-bilan #printRecap { display: block !important; margin-top: 14px; }
+    body.print-bilan #printRecap table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    body.print-bilan #printRecap th { background: #3D5A3E; color: white; padding: 5px 8px; font-size: 9px; }
+    body.print-bilan #printRecap td { padding: 6px 8px; text-align: center; border: 1px solid #ddd; font-family: monospace; font-size: 10px; }
+    body.print-bilan #printRecap td:first-child { text-align: left; font-family: sans-serif; font-weight: 600; }
+
+    /* ---- COTISATIONS ---- */
+    body.print-cotisations #cotPrintArea { display: block !important; }
+
+    /* Styles du tableau cotisations imprimé */
+    .cot-print-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #3D5A3E; padding-bottom: 10px; margin-bottom: 14px; }
+    .cot-print-title  { font-size: 20px; font-weight: 800; color: #3D5A3E; }
+    .cot-print-sub    { font-size: 11px; color: #7A7468; margin-top: 3px; }
+    .cot-print-contact { text-align: right; font-size: 10px; color: #555; line-height: 1.9; }
+    .cot-print-contact strong { display: block; font-weight: 700; color: #3D5A3E; }
+    .cot-print-table  { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .cot-print-table th { background: #3D5A3E !important; color: white !important; padding: 5px 7px; text-align: center; border: 1px solid #2d5030; font-size: 10px; }
+    .cot-print-table th:first-child { text-align: left; min-width: 120px; }
+    .cot-print-table td { padding: 5px 7px; border: 1px solid #ddd; text-align: center; font-size: 13px; }
+    .cot-print-table td.nom    { text-align: left; font-weight: 600; font-size: 11px; }
+    .cot-print-table td.paye   { color: #2D6A4F; font-weight: 700; }
+    .cot-print-table td.nonpaye { color: #ccc; }
+    .cot-print-table td.absent { background: #eee !important; color: #aaa; font-size: 10px; }
+    .cot-print-table tr:nth-child(even) td { background: #f9f9f9; }
+    .cot-print-footer { display: flex; justify-content: space-between; font-size: 10px; color: #555; margin-top: 12px; padding-top: 8px; border-top: 1px solid #ddd; }
+  }</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">&#127968;</div>
+    <div>
+      <div class="logo-text">Batarelle J2</div>
+      <div class="logo-sub">Administration copropriété</div>
+    </div>
+  </div>
+  <div class="year-nav">
+    <button id="prevYear">&#8592;</button>
+    <div class="year-display" id="yearDisplay">2026</div>
+    <button id="nextYear">&#8594;</button>
+  </div>
+
+</header>
+
+<!-- Mobile nav -->
+<div class="mobile-nav" id="mobileNav">
+  <button class="active" data-tab="dashboard">&#9635; Tableau</button>
+  <button data-tab="cotisations">&#10003; Cotisations</button>
+  <button data-tab="depenses">&#128176; Dépenses</button>
+  <button data-tab="tarifs">⚙️ Tarifs</button>
+  <button data-tab="habitants">&#128100; Habitants</button>
+  <button data-tab="menage">&#129529; Ménage</button>
+  <button data-tab="comptabilite">&#128202; Comptabilité</button>
+</div>
+
+<div class="layout">
+  <aside>
+    <div class="nav-label">Navigation</div>
+    <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">&#9635;</span> Tableau de bord</button>
+    <button class="nav-item" data-tab="cotisations"><span class="nav-icon">&#10003;</span> Cotisations</button>
+    <button class="nav-item" data-tab="depenses"><span class="nav-icon">&#128176;</span> Dépenses</button>
+    <div class="nav-label">Configuration</div>
+    <button class="nav-item" data-tab="tarifs"><span class="nav-icon">⚙️</span> Tarifs</button>
+    <button class="nav-item" data-tab="habitants"><span class="nav-icon">&#128100;</span> Habitants</button>
+    <button class="nav-item" data-tab="menage"><span class="nav-icon">&#129529;</span> Planning ménage</button>
+    <div class="nav-label">Bilan</div>
+    <button class="nav-item" data-tab="comptabilite"><span class="nav-icon">&#128202;</span> Comptabilité</button>
+  </aside>
+
+  <main>
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="tab-dashboard">
+      <div id="dashContent"></div>
+      <div id="reportBanner"></div>
+      <div id="dashCards"></div>
+      <div id="dashProchain"></div>
+      <div id="reportHabitants"></div>
+    </div>
+
+    <!-- COTISATIONS -->
+    <div class="section" id="tab-cotisations">
+      <!-- En-tête impression cotisations -->
+      <div id="printHeaderCot" style="display:none;">
+        <div style="border-bottom:3px solid #3D5A3E;padding-bottom:12px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-size:26px;font-weight:800;color:#3D5A3E;letter-spacing:-1px;">Batarelle J2</div>
+              <div style="font-size:13px;color:#7A7468;margin-top:4px;">Tableau des cotisations — <span id="printYearCot"></span></div>
+            </div>
+            <div style="text-align:right;font-size:11px;color:#555;line-height:1.9;">
+              <div style="font-weight:700;font-size:12px;color:#3D5A3E;">Marouane Bouchaouata</div>
+              <div>07 81 20 31 83</div>
+              <div>marouane.bouchaouata@gmail.com</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page-header">
+        <div><div class="page-title">Cotisations</div><div class="page-sub">Suivi mensuel par habitant</div></div>
+        <button class="btn" id="btnImprimerCot" onclick="imprimerCotisations()">&#128438; Imprimer</button>
+        <input type="hidden" id="montantInput" value="15" />
+      </div>
+      <div class="cards-grid" id="cotStats"></div>
+      <div class="table-card" style="overflow-x:auto;">
+        <table id="cotTable" style="font-size:11px;">
+          <thead>
+            <tr>
+              <th style="min-width:90px;padding:5px 8px;">Habitant</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">J</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">F</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">M</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">A</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">M</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">J</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">J</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">A</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">S</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">O</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">N</th>
+              <th style="padding:5px 3px;text-align:center;width:28px;">D</th>
+              <th style="padding:5px 6px;text-align:right;">Payé</th>
+              <th style="padding:5px 6px;">Statut</th>
+            </tr>
+          </thead>
+          <tbody id="cotBody"></tbody>
+        </table>
+      </div>
+      <div id="cotMobileCards"></div>
+      <!-- Légende impression -->
+      <div id="printLegendeCot" style="display:none;margin-top:14px;padding-top:10px;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:10px;color:#555;">
+          <strong>Légende :</strong>
+          &nbsp;<span style="font-size:14px;color:#2D6A4F;">✓</span> Payé
+          &nbsp;&nbsp;<span style="font-size:14px;color:#ccc;">○</span> Non payé
+          &nbsp;&nbsp;<span style="background:#eee;padding:1px 5px;color:#aaa;border:1px solid #ddd;font-size:10px;">—</span> Absent
+        </div>
+        <div style="text-align:right;font-size:10px;color:#555;">Imprimé le <span id="printDateCot"></span></div>
+      </div>
+    </div>
+
+    <!-- DEPENSES -->
+    <div class="section" id="tab-depenses">
+      <div class="page-header">
+        <div><div class="page-title">Dépenses</div><div class="page-sub">Toutes les dépenses <span id="depYear"></span></div></div>
+        <button class="btn primary" id="btnAddDep">+ Ajouter</button>
+      </div>
+      <div class="cards-grid" id="depStats"></div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Montant</th><th></th></tr></thead>
+          <tbody id="depBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MENAGE -->
+    <div class="section" id="tab-menage">
+      <div class="cards-grid" id="menStats" style="margin-bottom:16px;"></div>
+      <div class="page-header">
+        <div>
+          <div class="page-title">Planning ménage</div>
+          <div class="page-sub" id="menSub"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="hidden" id="prixPassage" value="22.5" />
+          <input type="hidden" id="prixCave" value="10" />
+        </div>
+      </div>
+      <div class="table-card" style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Mois</th>
+              <th style="text-align:center;">Payé ✓</th>
+              <th style="text-align:center;">Nb jeudis</th>
+              <th>Dernier jeudi</th>
+              <th style="text-align:right;">Escalier</th>
+              <th style="text-align:center;">Cave (trim.)</th>
+              <th style="text-align:right;">Total</th>
+              <th>Date paiement</th>
+            </tr>
+          </thead>
+          <tbody id="menBody"></tbody>
+        </table>
+      </div>
+      <div id="caveStats"></div>
+      <div style="display:none"><table><tbody id="caveBody"></tbody></table></div>
+      <div style="display:none" id="caveSub"></div>
+    </div>
+
+    <!-- HABITANTS -->
+    <div class="section" id="tab-habitants">
+      <div class="page-header">
+        <div><div class="page-title">Habitants</div><div class="page-sub">Cliquez sur une cellule pour modifier</div></div>
+        <button class="btn primary" id="btnAddHab">+ Ajouter un habitant</button>
+      </div>
+      <div class="table-card" style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:160px;">Nom / Prénom</th>
+              <th style="min-width:100px;">Appartement</th>
+              <th style="min-width:160px;">Contact</th>
+              <th style="min-width:120px;">Date d'entrée</th>
+              <th style="min-width:120px;">Date de sortie</th>
+              <th style="min-width:90px;">Statut</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="habBody"></tbody>
+        </table>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Le statut est calculé automatiquement selon les dates d'entrée et de sortie.</p>
+    </div>
+
+
+    <!-- TARIFS -->
+    <div class="section" id="tab-tarifs">
+      <div class="page-header">
+        <div><div class="page-title">Tarifs & paramètres</div><div class="page-sub">Historique des tarifs applicables</div></div>
+        <button class="btn primary" id="btnAddTarif">+ Ajouter un tarif</button>
+      </div>
+
+      <!-- Tarifs actifs -->
+      <div id="tarifsActifs" style="margin-bottom:24px;"></div>
+
+      <!-- Historique -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title">Historique des tarifs</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Montant</th>
+              <th>Applicable depuis</th>
+              <th>Note</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tarifsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COMPTABILITE -->
+    <div class="section" id="tab-comptabilite">
+      <div class="page-header">
+        <div><div class="page-title">Comptabilité</div><div class="page-sub">Bilan annuel <span id="comptYear"></span></div></div>
+        <button class="btn primary" id="btnImprimer" onclick="document.body.classList.add('print-bilan');window.print();setTimeout(()=>document.body.classList.remove('print-bilan'),500)">&#128438; Imprimer / PDF</button>
+      </div>
+
+      <!-- En-tête impression -->
+      <div id="printHeader" style="display:none;">
+        <div style="border-bottom:3px solid #3D5A3E;padding-bottom:14px;margin-bottom:6px;">
+          <div style="text-align:center;margin-bottom:10px;">
+            <div style="font-size:28px;font-weight:800;color:#3D5A3E;letter-spacing:-1px;line-height:1.1;">Batarelle J2</div>
+            <div style="font-size:15px;color:#7A7468;margin-top:4px;font-weight:600;">Bilan <span id="printYear"></span></div>
+          </div>
+          <div style="text-align:center;font-size:11px;color:#555;line-height:1.9;border-top:1px solid #e5e5e5;padding-top:10px;">
+            <span style="font-weight:700;color:#3D5A3E;">Marouane Bouchaouata</span>
+            &nbsp;·&nbsp; 07 81 20 31 83
+            &nbsp;·&nbsp; marouane.bouchaouata@gmail.com
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="comptCards"></div>
+      <div id="comptBilan"></div>
+      <div id="comptSoldeFinal"></div>
+      <div id="printRecap" style="display:none;"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL DÉPENSE -->
+<div class="modal-overlay" id="modalDep">
+  <div class="modal">
+    <h3 id="modalDepTitle">Nouvelle dépense</h3>
+    <input type="hidden" id="depEditId" value="" />
+    <div class="form-row"><label>Date</label><input type="date" id="depDate" /></div>
+    <div class="form-row"><label>Catégorie</label>
+      <input type="text" id="depType" list="depTypeList" placeholder="ex: Ménage, Eau, Électricité…" autocomplete="off" />
+      <datalist id="depTypeList">
+        <option>Entretien</option>
+        <option>Fournitures</option>
+        <option>Ménage</option>
+        <option>Ménage cave</option>
+        <option>Divers</option>
+      </datalist>
+    </div>
+    <div class="form-row"><label>Description</label><input type="text" id="depDesc" placeholder="ex: Ménage commun janvier" /></div>
+    <div class="form-row"><label>Montant (€)</label><input type="number" id="depMontant" value="0" min="0" /></div>
+    <div class="modal-footer">
+      <button class="btn" id="cancelDep">Annuler</button>
+      <button class="btn primary" id="saveDep">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HABITANT supprimé - édition inline -->
+
+<!-- MODAL RECETTE -->
+<div class="modal-overlay" id="modalRecette">
+  <div class="modal">
+    <h3 id="modalRecetteTitre">Nouvelle entrée</h3>
+    <input type="hidden" id="recetteEditId" value="" />
+    <div class="form-row"><label>Date</label><input type="date" id="recetteDate" /></div>
+    <div class="form-row"><label>Catégorie</label>
+      <input type="text" id="recetteCat" list="recetteCatList" placeholder="ex: Don, Remboursement, Subvention…" autocomplete="off" />
+      <datalist id="recetteCatList">
+        <option>Don</option><option>Remboursement</option><option>Subvention</option>
+        <option>Vente</option><option>Autre recette</option>
+      </datalist>
+    </div>
+    <div class="form-row"><label>Description</label><input type="text" id="recetteDesc" placeholder="ex: Remboursement assurance" /></div>
+    <div class="form-row"><label>Montant (€)</label><input type="number" id="recetteMontant" value="0" min="0" /></div>
+    <div class="form-row"><label>Reçu de</label><input type="text" id="recetteSource" placeholder="Nom / organisme" /></div>
+    <div class="form-row"><label>Mois concerné</label>
+      <select id="recetteMois">
+        <option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option>
+        <option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option>
+        <option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option>
+        <option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="cancelRecette">Annuler</button>
+      <button class="btn primary" id="saveRecette">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL TARIF -->
+<div class="modal-overlay" id="modalTarif">
+  <div class="modal">
+    <h3 id="modalTarifTitre">Nouveau tarif</h3>
+    <input type="hidden" id="tarifEditId" value="" />
+    <div class="form-row">
+      <label>Type de tarif</label>
+      <select id="tarifType">
+        <option value="cotisation">Cotisation mensuelle</option>
+        <option value="escalier">Escalier (par passage)</option>
+        <option value="cave">Cave (par passage)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Montant (€)</label>
+      <input type="number" id="tarifMontant" value="0" min="0" step="0.5" />
+    </div>
+    <div class="form-row">
+      <label>Applicable à partir du</label>
+      <input type="date" id="tarifDateDebut" />
+    </div>
+    <div class="form-row">
+      <label>Note (optionnel)</label>
+      <input type="text" id="tarifNote" placeholder="ex: Augmentation approuvée en AG" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="cancelTarif">Annuler</button>
+      <button class="btn primary" id="saveTarif">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONSTANTES GLOBALES
+   ============================================================ */
+const MOIS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+const MOIS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+const STORE_KEY = 'gestion_immeuble_v3';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveData() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+let data = loadData() || {"habitants":[{"id":1,"nom":"Barnier","appart":"Appartement 1","contact":"","dateEntree":"2023-01-01","dateSortie":"2025-08-01"},{"id":2,"nom":"Gonnella","appart":"Appartement 1","contact":"","dateEntree":"2025-10-01","dateSortie":""},{"id":3,"nom":"Decant","appart":"Appartement 2","contact":"","dateEntree":"2023-01-01","dateSortie":""},{"id":4,"nom":"Puertas","appart":"Appartement 3","contact":"","dateEntree":"2023-01-01","dateSortie":""},{"id":5,"nom":"Soler","appart":"Appartement 4","contact":"","dateEntree":"2025-04-01","dateSortie":""},{"id":6,"nom":"Bouchaouata","appart":"Appartement 5","contact":"","dateEntree":"2023-01-01","dateSortie":""},{"id":7,"nom":"Benoît","appart":"Appartement 6","contact":"","dateEntree":"2023-01-01","dateSortie":""},{"id":8,"nom":"Cros","appart":"Appartement 7","contact":"","dateEntree":"2023-01-01","dateSortie":""},{"id":9,"nom":"Vildirim","appart":"Appartement 8","contact":"","dateEntree":"2025-08-01","dateSortie":""}],"cotisations":{"2025":{"1":[true,true,true,true,true,true,true,true,false,false,false,false],"2":[false,false,false,false,false,false,false,false,false,true,true,true],"3":[true,true,true,true,true,true,true,true,true,true,true,true],"4":[true,true,true,true,true,true,true,true,true,true,true,true],"5":[false,false,false,true,true,true,true,true,true,true,true,true],"6":[true,true,true,true,true,true,true,true,true,true,true,true],"7":[true,true,true,true,true,true,true,true,true,true,true,true],"8":[true,true,true,true,true,true,true,true,true,true,true,true],"9":[false,false,false,false,false,false,false,false,false,false,false,false]},"2026":{"2":[true,true,true,false,false,false,false,false,false,false,false,false],"3":[true,true,true,true,false,false,false,false,false,false,false,false],"4":[true,true,true,true,false,false,false,false,false,false,false,false],"5":[true,true,false,false,false,false,false,false,false,false,false,false],"6":[true,true,true,true,true,true,true,true,true,true,true,true],"7":[false,false,false,false,false,false,false,false,false,false,false,false],"8":[true,true,true,true,false,false,false,false,false,false,false,false],"9":[false,false,false,false,false,false,false,false,false,false,false,false]}},"depenses":[{"id":1,"year":2025,"date":"2025-01-30","type":"Ménage","desc":"Ménage Janvier 2025","montant":112.5,"payeur":"Planning ménage","mois":1,"_tag":"__menage_2025_1","_auto":true},{"id":2,"year":2025,"date":"2025-02-27","type":"Ménage","desc":"Ménage Février 2025","montant":90,"payeur":"Planning ménage","mois":2,"_tag":"__menage_2025_2","_auto":true},{"id":3,"year":2025,"date":"2025-03-27","type":"Ménage","desc":"Ménage Mars 2025","montant":90,"payeur":"Planning ménage","mois":3,"_tag":"__menage_2025_3","_auto":true},{"id":4,"year":2025,"date":"2025-04-24","type":"Ménage","desc":"Ménage Avril 2025","montant":90,"payeur":"Planning ménage","mois":4,"_tag":"__menage_2025_4","_auto":true},{"id":5,"year":2025,"date":"2025-05-29","type":"Ménage","desc":"Ménage Mai 2025","montant":112.5,"payeur":"Planning ménage","mois":5,"_tag":"__menage_2025_5","_auto":true},{"id":6,"year":2025,"date":"2025-06-26","type":"Ménage","desc":"Ménage Juin 2025","montant":90,"payeur":"Planning ménage","mois":6,"_tag":"__menage_2025_6","_auto":true},{"id":7,"year":2025,"date":"2025-07-31","type":"Ménage","desc":"Ménage Juillet 2025","montant":112.5,"payeur":"Planning ménage","mois":7,"_tag":"__menage_2025_7","_auto":true},{"id":8,"year":2025,"date":"2025-08-28","type":"Ménage","desc":"Ménage Août 2025","montant":90,"payeur":"Planning ménage","mois":8,"_tag":"__menage_2025_8","_auto":true},{"id":9,"year":2025,"date":"2025-09-25","type":"Ménage","desc":"Ménage Septembre 2025","montant":90,"payeur":"Planning ménage","mois":9,"_tag":"__menage_2025_9","_auto":true},{"id":10,"year":2025,"date":"2025-10-30","type":"Ménage","desc":"Ménage Octobre 2025","montant":112.5,"payeur":"Planning ménage","mois":10,"_tag":"__menage_2025_10","_auto":true},{"id":11,"year":2025,"date":"2025-11-27","type":"Ménage","desc":"Ménage Novembre 2025","montant":90,"payeur":"Planning ménage","mois":11,"_tag":"__menage_2025_11","_auto":true},{"id":12,"year":2025,"date":"2025-12-25","type":"Ménage","desc":"Ménage Décembre 2025","montant":90,"payeur":"Planning ménage","mois":12,"_tag":"__menage_2025_12","_auto":true},{"id":13,"year":2025,"date":"2025-03-27","type":"Ménage cave","desc":"Nettoyage cave T1 2025","montant":10,"payeur":"Planning ménage","mois":3,"_tag":"__cave_2025_T1","_auto":true},{"id":14,"year":2025,"date":"2025-06-26","type":"Ménage cave","desc":"Nettoyage cave T2 2025","montant":10,"payeur":"Planning ménage","mois":6,"_tag":"__cave_2025_T2","_auto":true},{"id":15,"year":2025,"date":"2025-09-25","type":"Ménage cave","desc":"Nettoyage cave T3 2025","montant":10,"payeur":"Planning ménage","mois":9,"_tag":"__cave_2025_T3","_auto":true},{"id":16,"year":2025,"date":"2025-12-25","type":"Ménage cave","desc":"Nettoyage cave T4 2025","montant":10,"payeur":"Planning ménage","mois":12,"_tag":"__cave_2025_T4","_auto":true}],"reportAnnee":{"2025":{"soldeCaisse":39.5,"impayes":{},"dateReport":"2024-12-31","anneeSource":2024}},"recettes":[],"menagePaiements":{"2025-1":{"paye":true,"datePaiement":"2025-01-30"},"2025-2":{"paye":true,"datePaiement":"2025-02-27"},"2025-3":{"paye":true,"datePaiement":"2025-03-27"},"2025-4":{"paye":true,"datePaiement":"2025-04-24"},"2025-5":{"paye":true,"datePaiement":"2025-05-29"},"2025-6":{"paye":true,"datePaiement":"2025-06-26"},"2025-7":{"paye":true,"datePaiement":"2025-07-31"},"2025-8":{"paye":true,"datePaiement":"2025-08-28"},"2025-9":{"paye":true,"datePaiement":"2025-09-25"},"2025-10":{"paye":true,"datePaiement":"2025-10-30"},"2025-11":{"paye":true,"datePaiement":"2025-11-27"},"2025-12":{"paye":true,"datePaiement":"2025-12-25"}},"cavePaiements":{"cave-2025-T1":{"paye":true,"datePaiement":"2025-03-27"},"cave-2025-T2":{"paye":true,"datePaiement":"2025-06-26"},"cave-2025-T3":{"paye":true,"datePaiement":"2025-09-25"},"cave-2025-T4":{"paye":true,"datePaiement":"2025-12-25"}},"nextRecetteId":2,"nextDepId":17,"nextHabId":10,"tarifs":[{"id":1,"type":"cotisation","montant":15,"dateDebut":"2025-01-01","note":"Tarif initial"},{"id":2,"type":"escalier","montant":22.5,"dateDebut":"2025-01-01","note":"Tarif initial"},{"id":3,"type":"cave","montant":10,"dateDebut":"2025-01-01","note":"Tarif initial"}],"nextTarifId":4};
+
+/* Migration : forcer soldeCaisse 2024→2025 = 39.5 */
+if (!data.reportAnnee) data.reportAnnee = {};
+if (!data.reportAnnee['2025']) data.reportAnnee['2025'] = {};
+data.reportAnnee['2025'].soldeCaisse = 39.5;
+data.reportAnnee['2025'].dateReport = '2024-12-31';
+data.reportAnnee['2025'].anneeSource = 2024;
+saveData();
+
+let currentYear = 2026;
+
+/* Calcul automatique du statut selon dates d'entrée / sortie */
+function isActifToday(h) {
+  const today = new Date().toISOString().slice(0,10);
+  const entree = h.dateEntree || '';
+  const sortie = h.dateSortie || '';
+  if (entree && today < entree) return false;
+  if (sortie && today > sortie) return false;
+  return true;
+}
+
+function isActifOnYear(h, year) {
+  const entree = h.dateEntree || '';
+  const sortie = h.dateSortie || '';
+  const debut = `${year}-01-01`;
+  const fin = `${year}-12-31`;
+  if (entree && entree > fin) return false;
+  if (sortie && sortie < debut) return false;
+  return true;
+}
+
+function isActifOnMonth(h, year, mois) {
+  const entree = h.dateEntree || '';
+  const sortie = h.dateSortie || '';
+  const mm = String(mois).padStart(2,'0');
+  const debutMois = `${year}-${mm}-01`;
+  const finMois = `${year}-${mm}-31`;
+  if (entree && entree > finMois) return false;
+  if (sortie && sortie < debutMois) return false;
+  return true;
+}
+
+function initCotYear(year) {
+  if (!data.cotisations[year]) data.cotisations[year] = {};
+  data.habitants.filter(h => isActifOnYear(h, year)).forEach(h => {
+    if (!data.cotisations[year][h.id]) data.cotisations[year][h.id] = Array(12).fill(false);
+  });
+
+}
+initCotYear(2026);
+
+/* ---- TARIFS : fonctions de base ---- */
+const TARIF_LABELS = {
+  cotisation: 'Cotisation mensuelle',
+  escalier: 'Escalier (par passage)',
+  cave: 'Cave (par passage)'
+};
+const TARIF_ICONS = { cotisation: '💰', escalier: '🧹', cave: '🪨' };
+const TARIF_COLORS = { cotisation: 'var(--blue)', escalier: 'var(--amber)', cave: 'var(--green)' };
+const TARIF_BGS = { cotisation: 'var(--blue-bg)', escalier: 'var(--amber-bg)', cave: 'var(--green-bg)' };
+
+function getTarifActif(type, dateStr) {
+  if (!data || !data.tarifs) return null;
+  const date = dateStr || new Date().toISOString().slice(0,10);
+  const applicable = data.tarifs
+    .filter(t => t.type === type && t.dateDebut <= date)
+    .sort((a,b) => b.dateDebut.localeCompare(a.dateDebut));
+  return applicable[0] || null;
+}
+
+function getMontantTarif(type, dateStr) {
+  if (!data || !data.tarifs) return (type === 'cotisation' ? 15 : type === 'escalier' ? 22.5 : 10);
+  const t = getTarifActif(type, dateStr);
+  return t ? t.montant : (type === 'cotisation' ? 15 : type === 'escalier' ? 22.5 : 10);
+}
+
+function getMontantMois(year, mois) {
+  if (!data || !data.tarifs) return 15;
+  const mm = String(mois).padStart(2,'0');
+  const dateStr = `${year}-${mm}-28`;
+  return getMontantTarif('cotisation', dateStr);
+}
+
+function syncTarifsToInputs() {
+  if (!data || !data.tarifs) return;
+  const dateRef = `${currentYear}-12-31`;
+  const el1 = document.getElementById('montantInput');
+  const el2 = document.getElementById('prixPassage');
+  const el3 = document.getElementById('prixCave');
+  if (el1) el1.value = getMontantTarif('cotisation', dateRef);
+  if (el2) el2.value = getMontantTarif('escalier', dateRef);
+  if (el3) el3.value = getMontantTarif('cave', dateRef);
+}
+
+function getMontant() {
+  // Retourne le tarif de cotisation en fin d'année (pour affichage global)
+  const el = document.getElementById('montantInput');
+  if (el) return parseFloat(el.value) || 0;
+  return getMontantTarif('cotisation', `${currentYear}-12-31`);
+}
+
+/* Retourne le montant de cotisation applicable pour un mois donné */
+
+function countThursdays(year, month) {
+  let count = 0, lastThursday = null;
+  const d = new Date(year, month - 1, 1);
+  while (d.getMonth() === month - 1) {
+    if (d.getDay() === 4) { count++; lastThursday = new Date(d); }
+    d.setDate(d.getDate() + 1);
+  }
+  return { count, lastThursday };
+}
+
+function fmt(n) { return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
+
+/* Calcule le solde net d'une année SANS report (cotisations + recettes - dépenses) */
+function getSoldePropreAnnee(year) {
+  initCotYear(year);
+  const actifs = data.habitants.filter(h => isActifOnYear(h, year));
+  const cots = data.cotisations[year] || {};
+  let totalPaye = 0;
+  actifs.forEach(h => {
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, year, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    // Calcul mois par mois avec le bon tarif
+    cotH.forEach((paye, i) => {
+      if (paye && moisActifs[i]) totalPaye += getMontantMois(year, i+1);
+    });
+  });
+  const deps = data.depenses.filter(d => d.year === year);
+  const totalDep = deps.reduce((s,d) => s + d.montant, 0);
+  const recettes = (data.recettes||[]).filter(r => r.year === year);
+  const totalRecettes = recettes.reduce((s,r) => s + r.montant, 0);
+  return { totalPaye, totalDep, totalRecettes, soldeProre: totalPaye + totalRecettes - totalDep };
+}
+
+/* Calcule le report entrant d'une année */
+function getReportEntrant(year, depth) {
+  if ((depth||0) > 10) return 0;
+  // Priorité absolue : report manuel saisi (ex: solde 2024 = 39.5€)
+  const reportManuel = (data.reportAnnee || {})[year];
+  if (reportManuel && reportManuel.soldeCaisse !== undefined) {
+    return reportManuel.soldeCaisse;
+  }
+  // Calcul récursif sur les années avec données
+  const cotsKeys = Object.keys(data.cotisations).map(Number).filter(y => !isNaN(y));
+  const premierYear = cotsKeys.length ? Math.min(...cotsKeys) : year;
+  if (year <= premierYear) return 0;
+  const prevYear = year - 1;
+  const { soldeProre } = getSoldePropreAnnee(prevYear);
+  const reportPrevEntrant = getReportEntrant(prevYear, (depth||0) + 1);
+  return soldeProre + reportPrevEntrant;
+}
+
+/* Calcule les impayés de N-1 qui se reportent sur N */
+function getImpayesReportes(year) {
+  initCotYear(year - 1);
+  const actifs = data.habitants.filter(h => isActifOnYear(h, year - 1));
+  const cots = data.cotisations[year - 1] || {};
+  const result = {};
+  actifs.forEach(h => {
+    const moisActifsH = Array.from({length:12}, (_,i) => isActifOnMonth(h, year-1, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    let du = 0, paye = 0;
+    moisActifsH.forEach((actif, i) => {
+      if (actif) { du += getMontantMois(year-1, i+1); if (cotH[i]) paye += getMontantMois(year-1, i+1); }
+    });
+    if (du - paye > 0) result[h.id] = du - paye;
+  });
+  return result;
+}
+
+function getSoldeAnnee(year) {
+  const { totalPaye, totalDep, totalRecettes, soldeProre } = getSoldePropreAnnee(year);
+  const reportEntrant = getReportEntrant(year);
+  return { totalPaye, totalDep, totalRecettes, solde: soldeProre + reportEntrant };
+}
+
+function getImpayes(year) {
+  initCotYear(year);
+  const actifs = data.habitants.filter(h => isActifOnYear(h, year));
+  const cots = data.cotisations[year] || {};
+  const result = {};
+  actifs.forEach(h => {
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, year, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    let montantDu = 0, montantPaye = 0;
+    moisActifs.forEach((actif, i) => {
+      if (actif) {
+        const t = getMontantMois(year, i+1);
+        montantDu += t;
+        if (cotH[i]) montantPaye += t;
+      }
+    });
+    const retard = montantDu - montantPaye;
+    if (retard > 0) result[h.id] = retard;
+  });
+  return result;
+}
+
+function renderDashboard() {
+  initCotYear(currentYear);
+  document.getElementById('dashYear') && (document.getElementById('dashYear').textContent = currentYear);
+
+  const msgAutre = `<div style="text-align:center;padding:60px 20px;">
+    <div style="font-size:40px;margin-bottom:16px;">🏢</div>
+    <div style="font-size:18px;font-weight:600;color:var(--text-muted);">Aucune donnée disponible</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:8px;">${currentYear}</div>
+  </div>`;
+
+  if (currentYear < 2025) {
+    document.getElementById('reportBanner').innerHTML = '';
+    document.getElementById('reportHabitants').innerHTML = '';
+    document.getElementById('dashCards').innerHTML = msgAutre;
+    document.getElementById('dashProchain').innerHTML = '';
+    document.getElementById('dashContent').innerHTML = '';
+    return;
+  }
+
+  const actifs = data.habitants.filter(h => isActifOnYear(h, currentYear));
+  const cots = data.cotisations[currentYear] || {};
+  let totalPaye = 0;
+  actifs.forEach(h => {
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, currentYear, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    cotH.forEach((v,i) => { if (v && moisActifs[i]) totalPaye += getMontantMois(currentYear, i+1); });
+  });
+  const deps = data.depenses.filter(d => d.year === currentYear);
+  const totalDep = deps.reduce((s,d) => s + d.montant, 0);
+  const totalRecettes = (data.recettes||[]).filter(r => r.year === currentYear).reduce((s,r) => s + r.montant, 0);
+  const reportCaisseEntrant = getReportEntrant(currentYear);
+  const solde = totalPaye + totalRecettes - totalDep + reportCaisseEntrant;
+
+  // Impayés
+  const impayes = getImpayes(currentYear);
+  const habitantsEnRetard = actifs.filter(h => impayes[h.id]);
+  const totalImpayes = Object.values(impayes).reduce((s,v)=>s+v,0);
+
+  // Prochain ménage
+  const prixMen = parseFloat(document.getElementById('prixPassage')?.value || 22.5) || 22.5;
+  const prixCaveVal = parseFloat(document.getElementById('prixCave')?.value || 10) || 10;
+  if (!data.menagePaiements) data.menagePaiements = {};
+  if (!data.cavePaiements) data.cavePaiements = {};
+  let prochainMois = null, prochainMontantMenage = 0, prochainDate = '', prochainDateStr = '';
+  for (let m = 1; m <= 12; m++) {
+    const key = getMenageKey(currentYear, m);
+    const p = data.menagePaiements[key] || {};
+    if (!p.paye) {
+      const { count, lastThursday } = countThursdays(currentYear, m);
+      prochainMois = MOIS_FULL[m-1];
+      prochainMontantMenage = (p.nbPassages !== undefined ? p.nbPassages : count) * prixMen;
+      if (lastThursday) {
+        prochainDateStr = `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`;
+        prochainDate = `${lastThursday.getDate()} ${MOIS_FULL[lastThursday.getMonth()]}`;
+      }
+      break;
+    }
+  }
+  let prochainMontantCave = 0, caveMêmeJour = false;
+  for (const { label, mois } of CAVE_TRIMESTRES) {
+    const key = getCaveKey(currentYear, label);
+    const p = data.cavePaiements[key] || {};
+    if (!p.paye) {
+      const { lastThursday } = countThursdays(currentYear, mois);
+      if (lastThursday && prochainDateStr) {
+        const cd = `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`;
+        if (cd === prochainDateStr) { prochainMontantCave = prixCaveVal; caveMêmeJour = true; }
+      }
+      break;
+    }
+  }
+  const totalProchain = prochainMontantMenage + prochainMontantCave;
+
+  // Taux de paiement
+  const totalDu = actifs.reduce((s,h) => {
+    const moisActifsH = Array.from({length:12},(_,i)=>isActifOnMonth(h,currentYear,i+1));
+    let du = 0;
+    moisActifsH.forEach((actif,i) => { if (actif) du += getMontantMois(currentYear,i+1); });
+    return s + du;
+  }, 0);
+  const tauxPct = totalDu > 0 ? Math.round((totalPaye / totalDu) * 100) : 100;
+
+  document.getElementById('reportBanner').innerHTML = '';
+  document.getElementById('reportHabitants').innerHTML = '';
+
+  // ---- SOLDE PRINCIPAL ----
+  const soldeColor = solde >= 0 ? '#2D6A4F' : '#9B2226';
+  const soldeBg = solde >= 0 ? '#D8EDDF' : '#F8DCDD';
+  const soldeBorder = solde >= 0 ? '#2D6A4F' : '#9B2226';
+
+  document.getElementById('dashCards').innerHTML = '';
+  document.getElementById('dashContent').innerHTML = `
+    <div style="margin-bottom:20px;">
+
+      <!-- Solde caisse + Prochain ménage -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <!-- Solde caisse -->
+        <div style="background:${soldeBg};border:2px solid ${soldeBorder};border-radius:16px;padding:22px 24px;min-height:120px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${soldeColor};opacity:0.8;">Solde caisse ${currentYear}</div>
+          <div style="font-family:monospace;font-size:36px;font-weight:800;color:${soldeColor};letter-spacing:-1px;line-height:1;margin-top:10px;">${solde>=0?'+':''}${fmt(solde)}</div>
+        </div>
+
+        <!-- Prochain paiement ménage -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:16px;padding:22px 24px;min-height:120px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;">Prochain ménage</div>
+          ${prochainMois ? `
+            <div style="font-family:monospace;font-size:28px;font-weight:700;color:${caveMêmeJour?'var(--green)':'var(--blue)'};">${fmt(totalProchain)}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${prochainMois}${prochainDate ? ' · ' + prochainDate : ''}</div>
+            ${caveMêmeJour ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Ménage ${fmt(prochainMontantMenage)} + Cave ${fmt(prochainMontantCave)}</div>` : ''}
+          ` : `<div style="font-size:18px;font-weight:600;color:var(--green);margin-top:8px;">Tout payé ✓</div>`}
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function renderCotisations() {
+  initCotYear(currentYear);
+  const actifs = data.habitants.filter(h => isActifOnYear(h, currentYear));
+  const cots = data.cotisations[currentYear];
+  const curMonth = currentYear === new Date().getFullYear() ? new Date().getMonth() : 11;
+  const tbody = document.getElementById('cotBody');
+  tbody.innerHTML = '';
+
+  actifs.forEach(h => {
+    const tr = document.createElement('tr');
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, currentYear, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    // Calcul mois par mois avec le bon tarif
+    let paye = 0, du = 0, attenduPaye = 0;
+    const attenduIndex = Math.min(curMonth, 11);
+    moisActifs.forEach((actif, i) => {
+      if (actif) {
+        const t = getMontantMois(currentYear, i+1);
+        du += t;
+        if (cotH[i]) paye += t;
+        if (i <= attenduIndex) attenduPaye += t;
+      }
+    });
+    const moisPayes = cotH.filter((v,i) => v && moisActifs[i]).length;
+    const nbMoisActifs = moisActifs.filter(Boolean).length;
+    // Retard = montant attendu jusqu'à ce mois - montant payé
+    let payeJusquIci = 0;
+    moisActifs.forEach((actif, i) => {
+      if (actif && i <= attenduIndex && cotH[i]) payeJusquIci += getMontantMois(currentYear, i+1);
+    });
+    const retard = attenduPaye - payeJusquIci > 0 ? Math.round((attenduPaye - payeJusquIci) / getMontantMois(currentYear, attenduIndex+1)) : 0;
+    const badge = retard > 0
+      ? `<span class="badge late" style="font-size:10px;padding:2px 6px;">-${retard}m</span>`
+      : moisPayes >= nbMoisActifs && nbMoisActifs > 0
+        ? `<span class="badge ok" style="font-size:10px;padding:2px 6px;">✓</span>`
+        : `<span class="badge partial" style="font-size:10px;padding:2px 6px;">…</span>`;
+
+    let cells = '';
+    for (let m = 0; m < 12; m++) {
+      const actifCeMois = moisActifs[m];
+      const checked = (cots[h.id]||[])[m] ? 'checked' : '';
+      if (actifCeMois) {
+        cells += `<td style="text-align:center;padding:2px 1px;"><input type="checkbox" class="check" data-hid="${h.id}" data-mois="${m}" ${checked} style="width:13px;height:13px;"></td>`;
+      } else {
+        cells += `<td style="text-align:center;padding:2px 1px;background:var(--surface2);"><span style="color:var(--border-strong);font-size:9px;">·</span></td>`;
+      }
+    }
+
+    tr.innerHTML = `
+      <td style="padding:3px 8px;font-size:12px;font-weight:600;white-space:nowrap;">${h.nom}</td>
+      ${cells}
+      <td style="padding:3px 6px;font-family:monospace;font-size:11px;color:var(--green);font-weight:600;text-align:right;white-space:nowrap;">${fmt(paye)}</td>
+      <td style="padding:3px 6px;">${badge}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.querySelectorAll('.check').forEach(cb => {
+    cb.addEventListener('change', function() {
+      const hid = parseInt(this.dataset.hid);
+      const mois = parseInt(this.dataset.mois);
+      if (!data.cotisations[currentYear][hid]) data.cotisations[currentYear][hid] = Array(12).fill(false);
+      data.cotisations[currentYear][hid][mois] = this.checked;
+      saveData();
+      renderCotisations();
+      renderDashboard();
+    });
+  });
+
+  // ---- Cartes mobiles ----
+  const MOIS_INITIALES = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const mobileContainer = document.getElementById('cotMobileCards');
+  if (mobileContainer) {
+    mobileContainer.innerHTML = '';
+    actifs.forEach(h => {
+      const moisActifs2 = Array.from({length:12}, (_,i) => isActifOnMonth(h, currentYear, i+1));
+      const nbMoisActifs2 = moisActifs2.filter(Boolean).length;
+      const cotH2 = cots[h.id] || Array(12).fill(false);
+      let paye2 = 0, du2 = 0;
+      moisActifs2.forEach((actif,i) => {
+        if (actif) { du2 += getMontantMois(currentYear,i+1); if (cotH2[i]) paye2 += getMontantMois(currentYear,i+1); }
+      });
+      const moisPayes2 = cotH2.filter((v,i) => v && moisActifs2[i]).length;
+      const attenduIndex2 = Math.min(curMonth, 11);
+      const moisAttendus2 = moisActifs2.slice(0, attenduIndex2 + 1).filter(Boolean).length;
+      const retard2 = moisAttendus2 - moisPayes2;
+      const badgeMobile = retard2 > 0
+        ? `<span class="badge late" style="font-size:10px;padding:2px 7px;">-${retard2}m</span>`
+        : moisPayes2 >= nbMoisActifs2 && nbMoisActifs2 > 0
+          ? `<span class="badge ok" style="font-size:10px;padding:2px 7px;">✓</span>`
+          : `<span class="badge partial" style="font-size:10px;padding:2px 7px;">…</span>`;
+      const card = document.createElement('div');
+      card.className = 'cot-card';
+      let monthsHTML = '';
+      for (let m = 0; m < 12; m++) {
+        const actif = moisActifs2[m];
+        const checked = (cots[h.id]||[])[m] ? 'checked' : '';
+        monthsHTML += `<div class="cot-month-cell${actif ? '' : ' inactive'}">
+          <span class="cot-month-label">${MOIS_INITIALES[m]}</span>
+          <input type="checkbox" class="check-mobile" data-hid="${h.id}" data-mois="${m}" ${checked} ${actif ? '' : 'disabled'}>
+        </div>`;
+      }
+      card.innerHTML = `
+        <div class="cot-card-header">
+          <span class="cot-card-name">${h.nom}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:monospace;font-size:12px;color:var(--green);font-weight:700;">${fmt(paye2)}</span>
+            ${badgeMobile}
+          </div>
+        </div>
+        <div class="cot-months-grid">${monthsHTML}</div>`;
+      mobileContainer.appendChild(card);
+    });
+    mobileContainer.querySelectorAll('.check-mobile').forEach(cb => {
+      cb.addEventListener('change', function() {
+        const hid = parseInt(this.dataset.hid);
+        const mois = parseInt(this.dataset.mois);
+        if (!data.cotisations[currentYear][hid]) data.cotisations[currentYear][hid] = Array(12).fill(false);
+        data.cotisations[currentYear][hid][mois] = this.checked;
+        saveData(); renderCotisations(); renderDashboard();
+      });
+    });
+  }
+
+  // Stats cotisations
+  const totalCotPaye = actifs.reduce((s,h) => {
+    const moisActifsH = Array.from({length:12},(_,i)=>isActifOnMonth(h,currentYear,i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    let sum = 0;
+    cotH.forEach((v,i) => { if (v && moisActifsH[i]) sum += getMontantMois(currentYear,i+1); });
+    return s + sum;
+  }, 0);
+  const recettesAnnee = (data.recettes||[]).filter(r => r.year === currentYear);
+  const totalRecettes = recettesAnnee.reduce((s,r) => s + r.montant, 0);
+  const reportN1 = getReportEntrant(currentYear);
+  document.getElementById('cotStats').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Report ${currentYear-1}</span>
+        <span style="font-family:monospace;font-size:14px;font-weight:700;color:${reportN1>=0?'var(--green)':'var(--red)'};">${reportN1>=0?'+':''}${fmt(reportN1)}</span>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Cotisations</span>
+        <span style="font-family:monospace;font-size:14px;font-weight:700;color:var(--blue);">${fmt(totalCotPaye)}</span>
+      </div>
+      <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:var(--radius);padding:8px 14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Total recettes</span>
+        <span style="font-family:monospace;font-size:14px;font-weight:700;color:var(--green);">${fmt(totalCotPaye + totalRecettes + reportN1)}</span>
+      </div>
+    </div>
+  `;
+
+  renderRecettes();
+}
+
+function renderRecettes() {
+  const recettes = (data.recettes||[]).filter(r => r.year === currentYear);
+  const tbody = document.getElementById('recetteBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (!recettes.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Aucune autre entrée pour ${currentYear} — cliquez sur "+ Ajouter"</td></tr>`;
+  } else {
+    recettes.forEach(r => {
+      const tr = document.createElement('tr');
+      const catStyle = getCatStyle(r.cat || 'Recette');
+      tr.innerHTML = `
+        <td class="mono" style="font-size:12px;">${r.date}</td>
+        <td><span class="badge" style="${catStyle}">${r.cat||'—'}</span></td>
+        <td>${r.desc}</td>
+        <td class="mono" style="font-weight:600;color:var(--green);">+${fmt(r.montant)}</td>
+        <td style="color:var(--text-muted);">${r.source||'—'}</td>
+        <td style="color:var(--text-muted);">${MOIS_FULL[r.mois-1]}</td>
+        <td style="display:flex;gap:4px;align-items:center;">
+          <button class="delete-btn" title="Modifier" onclick="editRecette(${r.id})" style="color:var(--blue);">✏</button>
+          <button class="delete-btn" title="Supprimer" onclick="deleteRecette(${r.id})">✕</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const total = recettes.reduce((s,r) => s + r.montant, 0);
+  const byCat = {};
+  recettes.forEach(r => { const k = r.cat||'Autre'; byCat[k] = (byCat[k]||0) + r.montant; });
+  const catCards = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,val]) => {
+    const p = catColorMap[cat.toLowerCase()] || CAT_PALETTES[0];
+    return `<div class="metric-card" style="border-left:3px solid ${p.color};">
+      <div class="metric-label">${cat}</div>
+      <div class="metric-value" style="font-size:20px;color:${p.color};">${fmt(val)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('recetteStats').innerHTML = total > 0
+    ? `<div class="metric-card"><div class="metric-label">Total autres entrées</div><div class="metric-value green">${fmt(total)}</div></div>${catCards}`
+    : '';
+}
+
+window.deleteRecette = function(id) {
+  if (!confirm('Supprimer cette entrée ?')) return;
+  data.recettes = data.recettes.filter(r => r.id !== id);
+  saveData(); renderCotisations(); renderDashboard();
+};
+
+window.editRecette = function(id) {
+  const r = data.recettes.find(r => r.id === id);
+  if (r) openRecetteModal(r);
+};
+
+function openRecetteModal(rec) {
+  const isEdit = !!rec;
+  document.getElementById('modalRecetteTitre').textContent = isEdit ? 'Modifier l\'entrée' : 'Nouvelle entrée';
+  document.getElementById('recetteEditId').value = isEdit ? rec.id : '';
+  document.getElementById('recetteDate').value = isEdit ? rec.date : new Date().toISOString().slice(0,10);
+  document.getElementById('recetteCat').value = isEdit ? rec.cat : '';
+  document.getElementById('recetteDesc').value = isEdit ? rec.desc : '';
+  document.getElementById('recetteMontant').value = isEdit ? rec.montant : 0;
+  document.getElementById('recetteSource').value = isEdit ? (rec.source||'') : '';
+  document.getElementById('recetteMois').value = isEdit ? rec.mois : (new Date().getMonth()+1);
+  document.getElementById('modalRecette').classList.add('open');
+}
+
+document.getElementById('btnAddRecette')?.addEventListener('click', () => openRecetteModal(null));
+document.getElementById('cancelRecette')?.addEventListener('click', () => { document.getElementById('modalRecette')?.classList.remove('open'); });
+document.getElementById('modalRecette')?.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+document.getElementById('saveRecette')?.addEventListener('click', () => {
+  const desc = document.getElementById('recetteDesc').value.trim();
+  if (!desc) { alert('Veuillez renseigner une description.'); return; }
+  const editId = document.getElementById('recetteEditId').value;
+  const payload = {
+    year: currentYear,
+    date: document.getElementById('recetteDate').value,
+    cat: document.getElementById('recetteCat').value.trim() || 'Autre recette',
+    desc,
+    montant: parseFloat(document.getElementById('recetteMontant').value) || 0,
+    source: document.getElementById('recetteSource').value.trim(),
+    mois: parseInt(document.getElementById('recetteMois').value),
+  };
+  if (!data.recettes) data.recettes = [];
+  if (editId) {
+    const idx = data.recettes.findIndex(r => r.id === parseInt(editId));
+    if (idx !== -1) data.recettes[idx] = { ...data.recettes[idx], ...payload };
+  } else {
+    data.recettes.push({ id: data.nextRecetteId++, ...payload });
+  }
+  saveData();
+  document.getElementById('modalRecette')?.classList.remove('open');
+  renderCotisations(); renderDashboard();
+});
+
+/* Palette tournante pour les catégories libres */
+const CAT_PALETTES = [
+  { bg:'#D8EDDF', color:'#2D6A4F' },
+  { bg:'#D6E4F7', color:'#1D4E89' },
+  { bg:'#FCEFD3', color:'#7D4E00' },
+  { bg:'#F8DCDD', color:'#9B2226' },
+  { bg:'#EDE0F7', color:'#5B2D8A' },
+  { bg:'#D0EEF0', color:'#1A6B72' },
+  { bg:'#FDEBD0', color:'#8B4513' },
+  { bg:'#E8F4D4', color:'#3B6E11' },
+];
+const catColorMap = {};
+let catColorIndex = 0;
+
+function getCatStyle(type) {
+  const key = (type||'Autre').trim().toLowerCase();
+  if (!catColorMap[key]) {
+    catColorMap[key] = CAT_PALETTES[catColorIndex % CAT_PALETTES.length];
+    catColorIndex++;
+  }
+  const p = catColorMap[key];
+  return `background:${p.bg};color:${p.color};`;
+}
+
+function updateDepTypeList() {
+  const categories = ['Entretien','Fournitures','Ménage','Ménage cave','Divers'];
+  const dl = document.getElementById('depTypeList');
+  if (dl) {
+    dl.innerHTML = '';
+    categories.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v; dl.appendChild(opt);
+    });
+  }
+}
+
+function renderDepenses() {
+  document.getElementById('depYear').textContent = currentYear;
+  const deps = data.depenses.filter(d => d.year === currentYear);
+  const tbody = document.getElementById('depBody');
+  tbody.innerHTML = '';
+
+  if (!deps.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Aucune dépense pour ${currentYear}</td></tr>`;
+  } else {
+    deps.forEach(d => {
+      const tr = document.createElement('tr');
+      const catStyle = getCatStyle(d.type);
+      const autoTag = d._auto ? `<span class="badge partial" style="font-size:10px;margin-left:4px;">auto</span>` : '';
+      tr.innerHTML = `
+        <td class="mono" style="font-size:12px;">${d.date}</td>
+        <td><span class="badge" style="${catStyle}">${d.type||'—'}</span></td>
+        <td>${d.desc}${autoTag}</td>
+        <td class="mono" style="font-weight:600;">${fmt(d.montant)}</td>
+        ${d._auto ? '<td></td>' : `<td style="display:flex;gap:4px;align-items:center;">
+          <button class="delete-btn" title="Modifier" onclick="editDep(${d.id})" style="color:var(--blue);">✏</button>
+          <button class="delete-btn" title="Supprimer" onclick="deleteDep(${d.id})">✕</button>
+        </td>`}`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* Stats */
+  const total = deps.reduce((s,d) => s+d.montant, 0);
+  document.getElementById('depStats').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Total dépenses</div><div class="metric-value amber">${fmt(total)}</div></div>
+  `;
+
+  updateDepTypeList();
+}
+
+window.deleteDep = function(id) {
+  if (!confirm('Supprimer cette dépense ?')) return;
+  data.depenses = data.depenses.filter(d => d.id !== id);
+  saveData(); renderDepenses(); renderDashboard();
+};
+
+function getMenageKey(year, mois) { return `${year}-${mois}`; }
+
+/* Synchronise une dépense auto dans data.depenses selon l'état payé/décoché */
+function syncDepenseMenage(year, mois, montantMois, datePaiement, paye) {
+  const tag = `__menage_${year}_${mois}`;
+  data.depenses = data.depenses.filter(d => d._tag !== tag);
+  if (paye) {
+    data.depenses.push({
+      id: data.nextDepId++,
+      year,
+      date: datePaiement || new Date().toISOString().slice(0,10),
+      type: 'Ménage',
+      desc: `Ménage ${MOIS_FULL[mois-1]} ${year}`,
+      montant: montantMois,
+      payeur: 'Planning ménage',
+      mois,
+      _tag: tag,
+      _auto: true,
+    });
+  }
+}
+
+function syncDepenseCave(year, trimestre, mois, montantCave, datePaiement, paye) {
+  const tag = `__cave_${year}_${trimestre}`;
+  data.depenses = data.depenses.filter(d => d._tag !== tag);
+  if (paye) {
+    data.depenses.push({
+      id: data.nextDepId++,
+      year,
+      date: datePaiement || new Date().toISOString().slice(0,10),
+      type: 'Ménage cave',
+      desc: `Nettoyage cave ${trimestre} ${year}`,
+      montant: montantCave,
+      payeur: 'Planning ménage',
+      mois,
+      _tag: tag,
+      _auto: true,
+    });
+  }
+}
+
+const CAVE_TRIMESTRES = [
+  { label: 'T1', mois: 3 },
+  { label: 'T2', mois: 6 },
+  { label: 'T3', mois: 9 },
+  { label: 'T4', mois: 12 },
+];
+function getCaveKey(year, trimestre) { return `cave-${year}-${trimestre}`; }
+function renderCave() { renderMenage(); }
+
+function renderMenage() {
+  const today = new Date();
+  const nextThursday = new Date(today);
+  const dayOfWeek = today.getDay();
+  const daysUntilThursday = dayOfWeek <= 4 ? 4 - dayOfWeek : 7 - dayOfWeek + 4;
+  nextThursday.setDate(today.getDate() + (daysUntilThursday === 0 ? 7 : daysUntilThursday));
+  const nextThursdayStr = nextThursday.getDate() + ' ' + MOIS_FULL[nextThursday.getMonth()] + ' ' + nextThursday.getFullYear();
+  const menSubEl = document.getElementById('menSub');
+  if (menSubEl) menSubEl.textContent = `Prochain jeudi : ${nextThursdayStr}`;
+
+  const tbody = document.getElementById('menBody');
+  tbody.innerHTML = '';
+  // Prix depuis les tarifs (au 31 déc de l'année pour le calcul global, mais par mois pour chaque ligne)
+  const prixEscalierDefault = parseFloat(document.getElementById('prixPassage')?.value || 22.5) || 0;
+  const prixCaveDefault = parseFloat(document.getElementById('prixCave')?.value || 10) || 0;
+  if (!data.menagePaiements) data.menagePaiements = {};
+  if (!data.cavePaiements) data.cavePaiements = {};
+
+  // Cave trimestrielle : T1=mars, T2=juin, T3=sept, T4=déc
+  const CAVE_MOIS = { 3: 'T1', 6: 'T2', 9: 'T3', 12: 'T4' };
+
+  // Corriger dates génériques
+  let needsSave = false;
+  for (let m = 1; m <= 12; m++) {
+    const key = getMenageKey(currentYear, m);
+    const p = data.menagePaiements[key];
+    if (p && p.paye) {
+      const { lastThursday } = countThursdays(currentYear, m);
+      if (lastThursday) {
+        const cd = `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`;
+        if (!p.datePaiement || p.datePaiement === '2026-03-17') { p.datePaiement = cd; needsSave = true; }
+      }
+    }
+  }
+  CAVE_TRIMESTRES.forEach(({ label, mois }) => {
+    const key = getCaveKey(currentYear, label);
+    const p = data.cavePaiements[key];
+    if (p && p.paye) {
+      const { lastThursday } = countThursdays(currentYear, mois);
+      if (lastThursday) {
+        const cd = `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`;
+        if (!p.datePaiement || p.datePaiement === '2026-03-17') { p.datePaiement = cd; needsSave = true; }
+      }
+    }
+  });
+  if (needsSave) saveData();
+
+  let totalEscalier = 0, totalCavePaye = 0, totalPaye = 0;
+
+  for (let m = 1; m <= 12; m++) {
+    const key = getMenageKey(currentYear, m);
+    const paiement = data.menagePaiements[key] || { paye: false, datePaiement: '' };
+    const { count: countAuto, lastThursday } = countThursdays(currentYear, m);
+    const count = paiement.nbPassages !== undefined ? paiement.nbPassages : countAuto;
+    const lastStr = lastThursday
+      ? `${lastThursday.getDate()} ${MOIS_FULL[lastThursday.getMonth()]}`
+      : '—';
+    const lastThursdayStr = lastThursday
+      ? `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`
+      : new Date().toISOString().slice(0,10);
+
+    // Tarif applicable pour ce mois précis (dernier jeudi du mois)
+    const moisDateStr = lastThursday
+      ? `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`
+      : `${currentYear}-${String(m).padStart(2,'0')}-01`;
+    const prixEscalier = getMontantTarif('escalier', moisDateStr) || prixEscalierDefault;
+    const prixCave = getMontantTarif('cave', moisDateStr) || prixCaveDefault;
+    const montantEscalier = count * prixEscalier;
+    totalEscalier += montantEscalier;
+
+    // Cave ce mois ?
+    const trimLabel = CAVE_MOIS[m];
+    const hasCave = !!trimLabel;
+    const caveKey = hasCave ? getCaveKey(currentYear, trimLabel) : null;
+    const cavePaiement = hasCave ? (data.cavePaiements[caveKey] || { paye: false, datePaiement: '' }) : null;
+
+    // Calcul total du mois
+    const cavePayeeCeMois = hasCave && cavePaiement && cavePaiement.paye;
+    const montantTotal = montantEscalier + (cavePayeeCeMois ? prixCave : 0);
+
+    if (paiement.paye) totalPaye += montantEscalier;
+    if (cavePayeeCeMois) { totalCavePaye += prixCave; totalPaye += prixCave; }
+
+    const tr = document.createElement('tr');
+    tr.style.background = paiement.paye ? 'rgba(45,106,79,0.04)' : '';
+
+    // Input nb passages escalier
+    const countInp = document.createElement('input');
+    countInp.type = 'number'; countInp.value = count; countInp.min = 0;
+    countInp.dataset.key = key;
+    countInp.style.cssText = "width:50px;padding:3px 5px;border-radius:7px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text);font-size:13px;font-family:monospace;text-align:center;";
+    countInp.title = `Calculé automatiquement : ${countAuto} jeudis`;
+    countInp.addEventListener('change', function() {
+      if (!data.menagePaiements[this.dataset.key]) data.menagePaiements[this.dataset.key] = {};
+      data.menagePaiements[this.dataset.key].nbPassages = parseInt(this.value) || 0;
+      const dp = data.menagePaiements[this.dataset.key];
+      if (dp.paye) syncDepenseMenage(currentYear, m, (parseInt(this.value)||0)*prixEscalier, dp.datePaiement, true);
+      saveData(); renderMenage(); renderDepenses(); renderDashboard(); renderComptabilite();
+    });
+
+    // Checkbox escalier payé
+    const chkMen = document.createElement('input');
+    chkMen.type = 'checkbox'; chkMen.className = 'check'; chkMen.checked = paiement.paye;
+    chkMen.dataset.key = key;
+    chkMen.addEventListener('change', function() {
+      if (!data.menagePaiements[this.dataset.key]) data.menagePaiements[this.dataset.key] = {};
+      data.menagePaiements[this.dataset.key].paye = this.checked;
+      if (this.checked && !data.menagePaiements[this.dataset.key].datePaiement)
+        data.menagePaiements[this.dataset.key].datePaiement = lastThursdayStr;
+      const dp = data.menagePaiements[this.dataset.key];
+      syncDepenseMenage(currentYear, m, montantEscalier, dp.datePaiement, dp.paye);
+      saveData(); renderMenage(); renderDepenses(); renderDashboard(); renderComptabilite();
+    });
+
+    // Colonne cave
+    const tdCave = document.createElement('td');
+    tdCave.style.textAlign = 'center';
+    if (hasCave) {
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:5px;';
+      const chkCave = document.createElement('input');
+      chkCave.type = 'checkbox'; chkCave.className = 'check';
+      chkCave.checked = cavePaiement.paye; chkCave.dataset.key = caveKey;
+      chkCave.title = `Cave ${trimLabel} — ${fmt(prixCave)}`;
+      chkCave.addEventListener('change', function() {
+        if (!data.cavePaiements[this.dataset.key]) data.cavePaiements[this.dataset.key] = {};
+        data.cavePaiements[this.dataset.key].paye = this.checked;
+        if (this.checked && !data.cavePaiements[this.dataset.key].datePaiement)
+          data.cavePaiements[this.dataset.key].datePaiement = lastThursdayStr;
+        const dp = data.cavePaiements[this.dataset.key];
+        syncDepenseCave(currentYear, trimLabel, m, prixCave, dp.datePaiement, dp.paye);
+        saveData(); renderMenage(); renderDepenses(); renderDashboard(); renderComptabilite();
+      });
+      const lbl = document.createElement('span');
+      lbl.style.cssText = 'font-size:10px;color:var(--blue);font-weight:700;';
+      lbl.textContent = trimLabel + ' ' + fmt(prixCave);
+      wrapper.appendChild(chkCave); wrapper.appendChild(lbl);
+      tdCave.appendChild(wrapper);
+    } else {
+      tdCave.innerHTML = '<span style="color:var(--border-strong);font-size:11px;">·</span>';
+    }
+
+    // Input date paiement escalier
+    const dateInp = document.createElement('input');
+    dateInp.type = 'date';
+    dateInp.value = paiement.datePaiement || lastThursdayStr;
+    dateInp.disabled = !paiement.paye;
+    dateInp.dataset.key = key;
+    dateInp.style.cssText = `padding:3px 7px;border-radius:7px;border:1px solid var(--border-strong);background:var(--bg);color:var(--text);font-size:12px;font-family:monospace;width:130px;opacity:${paiement.paye?1:0.4};`;
+    dateInp.addEventListener('change', function() {
+      if (!data.menagePaiements[this.dataset.key]) data.menagePaiements[this.dataset.key] = {};
+      data.menagePaiements[this.dataset.key].datePaiement = this.value;
+      const dp = data.menagePaiements[this.dataset.key];
+      if (dp.paye) syncDepenseMenage(currentYear, m, montantEscalier, this.value, true);
+      saveData(); renderDepenses(); renderDashboard(); renderComptabilite();
+    });
+
+    // Colonne payé (escalier uniquement — cave a sa propre checkbox)
+    const tdPaye = document.createElement('td');
+    tdPaye.style.textAlign = 'center';
+    tdPaye.appendChild(chkMen);
+
+    // Assembler la ligne
+    tr.innerHTML = `
+      <td style="font-weight:500;">${MOIS_FULL[m-1]}</td>
+      <td style="text-align:center;"></td>
+      <td style="text-align:center;"></td>
+      <td style="color:var(--text-muted);font-size:12px;">${lastStr}</td>
+      <td style="text-align:right;font-family:monospace;font-weight:600;color:var(--amber);">${fmt(montantEscalier)}</td>
+      <td></td>
+      <td style="text-align:right;font-family:monospace;font-weight:600;color:${cavePayeeCeMois?'var(--green)':'var(--text-muted)'};">${cavePayeeCeMois?fmt(montantTotal):fmt(montantEscalier)}</td>
+      <td></td>`;
+    tr.children[1].appendChild(chkMen);
+    tr.children[2].appendChild(countInp);
+    tr.children[5].appendChild(tdCave.children[0] || tdCave.firstChild || document.createTextNode('·'));
+    // Reconstruire proprement
+    tr.children[5].innerHTML = '';
+    if (hasCave) {
+      const w2 = document.createElement('div');
+      w2.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:5px;';
+      const cc2 = document.createElement('input');
+      cc2.type='checkbox'; cc2.className='check';
+      cc2.checked = cavePaiement.paye; cc2.dataset.key = caveKey;
+      cc2.title = `Cave ${trimLabel} — ${fmt(prixCave)}`;
+      cc2.addEventListener('change', function() {
+        if (!data.cavePaiements[this.dataset.key]) data.cavePaiements[this.dataset.key] = {};
+        data.cavePaiements[this.dataset.key].paye = this.checked;
+        if (this.checked && !data.cavePaiements[this.dataset.key].datePaiement)
+          data.cavePaiements[this.dataset.key].datePaiement = lastThursdayStr;
+        const dp = data.cavePaiements[this.dataset.key];
+        syncDepenseCave(currentYear, trimLabel, m, prixCave, dp.datePaiement, dp.paye);
+        saveData(); renderMenage(); renderDepenses(); renderDashboard(); renderComptabilite();
+      });
+      const l2 = document.createElement('span');
+      l2.style.cssText = 'font-size:10px;color:var(--blue);font-weight:700;';
+      l2.textContent = trimLabel + ' · ' + fmt(prixCave);
+      w2.appendChild(cc2); w2.appendChild(l2);
+      tr.children[5].appendChild(w2);
+    } else {
+      tr.children[5].innerHTML = '<span style="color:var(--border-strong);font-size:11px;">·</span>';
+    }
+    tr.children[7].appendChild(dateInp);
+    tbody.appendChild(tr);
+  }
+
+  // Ligne totaux
+  const trTot = document.createElement('tr');
+  trTot.style.cssText = 'background:var(--surface2);font-weight:700;border-top:2px solid var(--border-strong);';
+  trTot.innerHTML = `
+    <td colspan="2" style="padding:8px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Total ${currentYear}</td>
+    <td colspan="2"></td>
+    <td style="text-align:right;font-family:monospace;color:var(--amber);">${fmt(totalEscalier)}</td>
+    <td style="text-align:center;font-family:monospace;font-size:12px;color:var(--blue);">${fmt(totalCavePaye)}</td>
+    <td style="text-align:right;font-family:monospace;color:var(--green);">${fmt(totalEscalier+totalCavePaye)}</td>
+    <td style="text-align:center;font-size:12px;color:var(--text-muted);">Payé : <span style="font-family:monospace;color:var(--green);">${fmt(totalPaye)}</span></td>`;
+  tbody.appendChild(trTot);
+
+  // Prochain paiement
+  let prochainMois = null, prochainMontantEsc = 0, prochainDate = '', prochainDateStr = '';
+  for (let m = 1; m <= 12; m++) {
+    const key = getMenageKey(currentYear, m);
+    const p = data.menagePaiements[key] || {};
+    if (!p.paye) {
+      const { count, lastThursday } = countThursdays(currentYear, m);
+      prochainMois = MOIS_FULL[m-1];
+      const ltStr2 = lastThursday ? `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}` : `${currentYear}-${String(m).padStart(2,'0')}-01`;
+      const pEsc2 = getMontantTarif('escalier', ltStr2) || prixEscalierDefault;
+      prochainMontantEsc = (p.nbPassages !== undefined ? p.nbPassages : count) * pEsc2;
+      if (lastThursday) {
+        prochainDateStr = `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`;
+        prochainDate = `${lastThursday.getDate()} ${MOIS_FULL[lastThursday.getMonth()]}`;
+      }
+      break;
+    }
+  }
+  let prochainCave = 0, caveMêmeJour = false;
+  for (const { label, mois } of CAVE_TRIMESTRES) {
+    const key = getCaveKey(currentYear, label);
+    const p = data.cavePaiements[key] || {};
+    if (!p.paye) {
+      const { lastThursday } = countThursdays(currentYear, mois);
+      if (lastThursday && prochainDateStr) {
+        const cd = `${lastThursday.getFullYear()}-${String(lastThursday.getMonth()+1).padStart(2,'0')}-${String(lastThursday.getDate()).padStart(2,'0')}`;
+        const pCav = getMontantTarif('cave', cd) || prixCaveDefault;
+        if (cd === prochainDateStr) { prochainCave = pCav; caveMêmeJour = true; }
+      }
+      break;
+    }
+  }
+  const totalProchain = prochainMontantEsc + prochainCave;
+  const detailStr = caveMêmeJour
+    ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Escalier ${fmt(prochainMontantEsc)} + Cave ${fmt(prochainCave)}</div>`
+    : '';
+
+  document.getElementById('menStats').innerHTML = prochainMois
+    ? `<div class="metric-card" style="border-left:3px solid var(--blue);">
+        <div class="metric-label">Prochain paiement</div>
+        <div class="metric-value ${caveMêmeJour?'green':'blue'}" style="font-size:22px;">${fmt(totalProchain)}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${prochainMois}${prochainDate?' — '+prochainDate:''}</div>
+        ${detailStr}
+       </div>`
+    : `<div class="metric-card" style="border-left:3px solid var(--green);">
+        <div class="metric-label">Prochain paiement</div>
+        <div class="metric-value green" style="font-size:18px;">Tout payé ✓</div>
+       </div>`;
+
+  document.getElementById('caveStats').innerHTML = '';
+}
+
+
+const EDIT_CELL_STYLE = `
+  padding: 5px 8px; border-radius: 7px; border: 1px solid var(--border-strong);
+  background: var(--bg); color: var(--text); font-size: 13px;
+  font-family: 'DM Sans', sans-serif; width: 100%; outline: none;
+  transition: border 0.15s;
+`;
+
+function makeEditInput(value, placeholder, onSave) {
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.value = value || '';
+  inp.placeholder = placeholder || '';
+  inp.setAttribute('style', EDIT_CELL_STYLE);
+  inp.addEventListener('change', () => { onSave(inp.value.trim()); saveData(); });
+  inp.addEventListener('focus', () => { inp.style.borderColor = 'var(--accent)'; });
+  inp.addEventListener('blur', () => { inp.style.borderColor = 'var(--border-strong)'; });
+  return inp;
+}
+
+function makeDateInput(value, placeholder, onSave) {
+  const inp = document.createElement('input');
+  inp.type = 'date';
+  inp.value = value || '';
+  inp.title = placeholder;
+  inp.setAttribute('style', EDIT_CELL_STYLE + 'font-family:\'DM Mono\',monospace;font-size:12px;');
+  inp.addEventListener('change', () => { onSave(inp.value); saveData(); renderHabitants(); renderCotisations(); renderDashboard(); });
+  inp.addEventListener('focus', () => { inp.style.borderColor = 'var(--accent)'; });
+  inp.addEventListener('blur', () => { inp.style.borderColor = 'var(--border-strong)'; });
+  return inp;
+}
+
+function renderHabitants() {
+  const tbody = document.getElementById('habBody');
+  tbody.innerHTML = '';
+
+  data.habitants.forEach(h => {
+    const actif = isActifToday(h);
+    const tr = document.createElement('tr');
+    tr.style.background = actif ? '' : 'rgba(155,34,38,0.03)';
+
+    // Nom
+    const tdNom = document.createElement('td');
+    tdNom.style.fontWeight = '500';
+    tdNom.appendChild(makeEditInput(h.nom, 'Nom / Prénom', v => { if(v) h.nom = v; }));
+    tr.appendChild(tdNom);
+
+    // Appart
+    const tdAppart = document.createElement('td');
+    tdAppart.appendChild(makeEditInput(h.appart, 'Apt ...', v => { h.appart = v; }));
+    tr.appendChild(tdAppart);
+
+    // Contact
+    const tdContact = document.createElement('td');
+    tdContact.appendChild(makeEditInput(h.contact, 'Tel / email', v => { h.contact = v; }));
+    tr.appendChild(tdContact);
+
+    // Date entrée
+    const tdEntree = document.createElement('td');
+    tdEntree.appendChild(makeDateInput(h.dateEntree, 'Date d\'entrée', v => { h.dateEntree = v; }));
+    tr.appendChild(tdEntree);
+
+    // Date sortie
+    const tdSortie = document.createElement('td');
+    const sortieInp = makeDateInput(h.dateSortie, 'Date de sortie (laisser vide si toujours là)', v => { h.dateSortie = v; });
+    tdSortie.appendChild(sortieInp);
+    tr.appendChild(tdSortie);
+
+    // Statut automatique
+    const tdStatut = document.createElement('td');
+    const statutBadge = document.createElement('span');
+    const entreeOk = !h.dateEntree || new Date().toISOString().slice(0,10) >= h.dateEntree;
+    const sortieOk = !h.dateSortie;
+    let statutLabel, statutClass, statutTitle;
+    if (!entreeOk) {
+      statutLabel = 'À venir';
+      statutClass = 'partial';
+      statutTitle = `Entrée prévue le ${h.dateEntree}`;
+    } else if (actif) {
+      statutLabel = 'Actif';
+      statutClass = 'ok';
+      statutTitle = h.dateEntree ? `Présent depuis le ${h.dateEntree}` : 'Actif';
+    } else {
+      statutLabel = 'Parti';
+      statutClass = 'late';
+      statutTitle = h.dateSortie ? `Parti le ${h.dateSortie}` : 'Inactif';
+    }
+    statutBadge.className = `badge ${statutClass}`;
+    statutBadge.textContent = statutLabel;
+    statutBadge.title = statutTitle;
+    statutBadge.style.fontSize = '11px';
+    tdStatut.appendChild(statutBadge);
+    tr.appendChild(tdStatut);
+
+    // Supprimer
+    const tdDel = document.createElement('td');
+    tdDel.style.textAlign = 'center';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn';
+    delBtn.title = 'Supprimer cet habitant';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', () => {
+      if (!confirm(`Supprimer ${h.nom} ? Ses cotisations seront également supprimées.`)) return;
+      data.habitants = data.habitants.filter(x => x.id !== h.id);
+      Object.values(data.cotisations).forEach(yr => { delete yr[h.id]; });
+      saveData();
+      renderHabitants(); renderDashboard(); renderCotisations();
+    });
+    tdDel.appendChild(delBtn);
+    tr.appendChild(tdDel);
+
+    tbody.appendChild(tr);
+  });
+
+  if (!data.habitants.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Aucun habitant — cliquez sur "+ Ajouter un habitant"</td></tr>`;
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .mobile-nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function updateNavForYear() {
+  const restricted = currentYear < 2025;
+  document.querySelectorAll('.nav-item, .mobile-nav button').forEach(btn => {
+    if (btn.dataset.tab && btn.dataset.tab !== 'dashboard') {
+      btn.style.display = restricted ? 'none' : '';
+    }
+  });
+  if (restricted) switchTab('dashboard');
+}
+
+document.querySelectorAll('.nav-item, .mobile-nav button').forEach(btn => {
+  btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
+});
+
+document.getElementById('prevYear').addEventListener('click', () => {
+  currentYear--; document.getElementById('yearDisplay').textContent = currentYear;
+  initCotYear(currentYear); updateNavForYear(); renderAll();
+});
+document.getElementById('nextYear').addEventListener('click', () => {
+  currentYear++; document.getElementById('yearDisplay').textContent = currentYear;
+  initCotYear(currentYear); updateNavForYear(); renderAll();
+});
+document.getElementById('montantInput').addEventListener('input', () => { renderCotisations(); renderDashboard(); });
+document.getElementById('prixPassage').addEventListener('input', () => { renderMenage(); });
+document.getElementById('prixCave').addEventListener('input', () => { renderCave(); });
+
+/* ---- MODAL DÉPENSE (ajout + édition) ---- */
+function openDepModal(dep) {
+  const isEdit = !!dep;
+  document.getElementById('modalDepTitle').textContent = isEdit ? 'Modifier la dépense' : 'Nouvelle dépense';
+  document.getElementById('depEditId').value = isEdit ? dep.id : '';
+  document.getElementById('depDate').value = isEdit ? dep.date : new Date().toISOString().slice(0,10);
+  document.getElementById('depType').value = isEdit ? dep.type : '';
+  document.getElementById('depDesc').value = isEdit ? dep.desc : '';
+  document.getElementById('depMontant').value = isEdit ? dep.montant : 0;
+  document.getElementById('modalDep').classList.add('open');
+}
+
+document.getElementById('btnAddDep').addEventListener('click', () => openDepModal(null));
+document.getElementById('cancelDep').addEventListener('click', () => { document.getElementById('modalDep').classList.remove('open'); });
+document.getElementById('modalDep').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+
+document.getElementById('saveDep').addEventListener('click', () => {
+  const desc = document.getElementById('depDesc').value.trim();
+  if (!desc) { alert('Veuillez renseigner une description.'); return; }
+  const editId = document.getElementById('depEditId').value;
+  const payload = {
+    year: currentYear,
+    date: document.getElementById('depDate').value,
+    type: document.getElementById('depType').value.trim() || 'Autre',
+    desc,
+    montant: parseFloat(document.getElementById('depMontant').value) || 0,
+  };
+  if (editId) {
+    const idx = data.depenses.findIndex(d => d.id === parseInt(editId));
+    if (idx !== -1) data.depenses[idx] = { ...data.depenses[idx], ...payload };
+  } else {
+    data.depenses.push({ id: data.nextDepId++, ...payload });
+  }
+  saveData();
+  document.getElementById('modalDep').classList.remove('open');
+  renderDepenses(); renderDashboard();
+});
+
+window.editDep = function(id) {
+  const dep = data.depenses.find(d => d.id === id);
+  if (dep) openDepModal(dep);
+};
+
+/* ---- AJOUT HABITANT (inline) ---- */
+document.getElementById('btnAddHab').addEventListener('click', () => {
+  const today = new Date().toISOString().slice(0,10);
+  const newHab = {
+    id: data.nextHabId++,
+    nom: '',
+    appart: '',
+    contact: '',
+    dateEntree: today,
+    dateSortie: '',
+  };
+  data.habitants.push(newHab);
+  initCotYear(currentYear);
+  saveData();
+  renderHabitants();
+  const rows = document.querySelectorAll('#habBody tr');
+  const lastRow = rows[rows.length - 1];
+  if (lastRow) {
+    const inp = lastRow.querySelector('input');
+    if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+});
+
+function renderComptabilite() {
+  document.getElementById('comptYear').textContent = currentYear;
+  const montant = getMontant();
+  const actifs = data.habitants.filter(h => isActifOnYear(h, currentYear));
+  const cots = data.cotisations[currentYear] || {};
+  const deps = data.depenses.filter(d => d.year === currentYear);
+  const recettes = (data.recettes||[]).filter(r => r.year === currentYear);
+  const reportEntrant = (data.reportAnnee || {})[currentYear] || {};
+  const reportCaisse = getReportEntrant(currentYear);
+  const reportImpayes = getImpayesReportes(currentYear);
+
+  // ---- Totaux (tarif par mois) ----
+  let totalCotisations = 0;
+  actifs.forEach(h => {
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, currentYear, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    cotH.forEach((paye, i) => {
+      if (paye && moisActifs[i]) totalCotisations += getMontantMois(currentYear, i+1);
+    });
+  });
+  const totalAutresRecettes = recettes.reduce((s,r) => s + r.montant, 0);
+  const totalDepenses = deps.reduce((s,d) => s + d.montant, 0);
+  const soldeNet = totalCotisations + totalAutresRecettes + reportCaisse - totalDepenses;
+
+  // ---- Cartes résumé supprimées ----
+  document.getElementById('comptCards').innerHTML = '';
+
+  // ---- BILAN COMPACT ----
+  const bilanEl = document.getElementById('comptBilan');
+
+  // Recettes rows
+  let recRows = '';
+  // Report
+  recRows += `<tr style="background:var(--surface2);">
+    <td style="padding:5px 10px;font-size:12px;font-weight:600;color:var(--blue);">Report ${currentYear-1}</td>
+    <td style="padding:5px 10px;font-size:12px;color:var(--text-muted);">${reportCaisse===0?'Aucun report':'Solde reporté de '+(currentYear-1)}</td>
+    <td style="padding:5px 10px;font-size:12px;font-family:monospace;text-align:right;font-weight:600;color:${reportCaisse>=0?'var(--blue)':'var(--red)'};">${reportCaisse>=0?'+':''}${fmt(reportCaisse)}</td>
+  </tr>`;
+
+  // Cotisations par habitant (tarif par mois)
+  actifs.forEach(h => {
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, currentYear, i+1));
+    const cotH = cots[h.id] || Array(12).fill(false);
+    let montantH = 0, du = 0;
+    moisActifs.forEach((actif, i) => {
+      if (actif) {
+        const t = getMontantMois(currentYear, i+1);
+        du += t;
+        if (cotH[i]) montantH += t;
+      }
+    });
+    const nbMoisPresent = moisActifs.filter(Boolean).length;
+    const moisPayesValides = cotH.filter((v,i) => v && moisActifs[i]).length;
+    const soldeH = montantH - du;
+    const soldeStr = soldeH === 0 ? `<span style="color:var(--green);">✓</span>` : `<span style="color:var(--red);font-size:11px;">${fmt(soldeH)}</span>`;
+    recRows += `<tr>
+      <td style="padding:4px 10px;font-size:12px;font-weight:500;">${h.nom}</td>
+      <td style="padding:4px 10px;font-size:11px;color:var(--text-muted);">${h.appart} — ${moisPayesValides}/${nbMoisPresent} mois</td>
+      <td style="padding:4px 10px;font-size:12px;font-family:monospace;text-align:right;font-weight:600;color:var(--green);">${fmt(montantH)} ${soldeStr}</td>
+    </tr>`;
+  });
+
+  // Autres recettes
+  recettes.forEach(r => {
+    recRows += `<tr>
+      <td style="padding:4px 10px;font-size:12px;">${r.cat||'Recette'}</td>
+      <td style="padding:4px 10px;font-size:11px;color:var(--text-muted);">${r.desc}</td>
+      <td style="padding:4px 10px;font-size:12px;font-family:monospace;text-align:right;font-weight:600;color:var(--green);">${fmt(r.montant)}</td>
+    </tr>`;
+  });
+
+  // Dépenses rows par catégorie
+  const byCat = {};
+  deps.forEach(d => { const k = d.type||'Autre'; if (!byCat[k]) byCat[k] = []; byCat[k].push(d); });
+
+  let depRows = '';
+  Object.entries(byCat).sort((a,b) => b[1].reduce((s,d)=>s+d.montant,0) - a[1].reduce((s,d)=>s+d.montant,0))
+  .forEach(([cat, items]) => {
+    const catTotal = items.reduce((s,d)=>s+d.montant,0);
+    depRows += `<tr style="background:var(--surface2);">
+      <td style="padding:5px 10px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);" colspan="2">${cat}</td>
+      <td style="padding:5px 10px;font-size:12px;font-family:monospace;text-align:right;font-weight:600;color:var(--text-muted);">${fmt(catTotal)}</td>
+    </tr>`;
+    items.forEach(d => {
+      let detail = d.desc;
+      if (d._auto && d.mois) {
+        const { count } = countThursdays(d.year || currentYear, d.mois);
+        detail += ` <span style="font-size:10px;color:var(--text-muted);">(${count} passage${count>1?'s':''})</span>`;
+      }
+      depRows += `<tr>
+        <td style="padding:3px 10px 3px 20px;font-size:11px;color:var(--text-muted);">${d.date}</td>
+        <td style="padding:3px 10px;font-size:11px;color:var(--text-muted);">${detail}</td>
+        <td style="padding:3px 10px;font-size:11px;font-family:monospace;text-align:right;color:var(--red);">${fmt(d.montant)}</td>
+      </tr>`;
+    });
+  });
+
+  if (!depRows) depRows = `<tr><td colspan="3" style="padding:12px;text-align:center;color:var(--text-muted);font-size:12px;">Aucune dépense</td></tr>`;
+
+  bilanEl.innerHTML = `
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;font-size:13px;margin-bottom:16px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <!-- RECETTES -->
+        <tr>
+          <td colspan="2" style="padding:8px 10px;background:var(--green-bg);font-weight:700;font-size:13px;color:var(--green);border-bottom:1px solid var(--border);">+ Recettes</td>
+          <td style="padding:8px 10px;background:var(--green-bg);font-family:monospace;font-weight:700;text-align:right;color:var(--green);border-bottom:1px solid var(--border);">${fmt(totalCotisations + totalAutresRecettes + Math.max(reportCaisse,0))}</td>
+        </tr>
+        ${recRows}
+        <tr style="border-top:1px solid var(--border);">
+          <td colspan="2" style="padding:6px 10px;font-weight:700;font-size:12px;">Sous-total recettes</td>
+          <td style="padding:6px 10px;font-family:monospace;font-weight:700;text-align:right;color:var(--green);">${fmt(totalCotisations + totalAutresRecettes)}</td>
+        </tr>
+
+        <!-- SÉPARATEUR -->
+        <tr><td colspan="3" style="height:8px;background:var(--bg);"></td></tr>
+
+        <!-- DÉPENSES -->
+        <tr>
+          <td colspan="2" style="padding:8px 10px;background:var(--red-bg);font-weight:700;font-size:13px;color:var(--red);border-bottom:1px solid var(--border);">− Dépenses</td>
+          <td style="padding:8px 10px;background:var(--red-bg);font-family:monospace;font-weight:700;text-align:right;color:var(--red);border-bottom:1px solid var(--border);">${fmt(totalDepenses)}</td>
+        </tr>
+        ${depRows}
+        <tr style="border-top:1px solid var(--border);">
+          <td colspan="2" style="padding:6px 10px;font-weight:700;font-size:12px;">Sous-total dépenses</td>
+          <td style="padding:6px 10px;font-family:monospace;font-weight:700;text-align:right;color:var(--red);">${fmt(totalDepenses)}</td>
+        </tr>
+
+        <!-- SÉPARATEUR -->
+        <tr><td colspan="3" style="height:8px;background:var(--bg);"></td></tr>
+
+        <!-- SOLDE NET -->
+        <tr style="background:${soldeNet>=0?'var(--green-bg)':'var(--red-bg)'};border-top:2px solid ${soldeNet>=0?'var(--green)':'var(--red)'};">
+          <td colspan="2" style="padding:10px 10px;font-weight:700;font-size:14px;color:${soldeNet>=0?'var(--green)':'var(--red)'};">= Résultat net ${currentYear}</td>
+          <td style="padding:10px 10px;font-family:monospace;font-weight:700;font-size:18px;text-align:right;color:${soldeNet>=0?'var(--green)':'var(--red)'};">${soldeNet>=0?'+':''}${fmt(soldeNet)}</td>
+        </tr>
+      </table>
+    </div>`;
+
+  // Solde final simplifié (écran)
+  const impayesVersNplus1 = getImpayes(currentYear);
+  const reportImpayes_total = Object.values(impayesVersNplus1).reduce((s,v)=>s+v,0);
+  document.getElementById('comptSoldeFinal').innerHTML = reportImpayes_total > 0
+    ? `<div style="padding:10px 14px;border-radius:var(--radius);background:var(--red-bg);font-size:12px;color:var(--red);border:1px solid var(--border);">
+        Impayés à reporter vers ${currentYear+1} : <strong style="font-family:monospace;">${fmt(reportImpayes_total)}</strong>
+       </div>`
+    : `<div style="padding:10px 14px;border-radius:var(--radius);background:var(--green-bg);font-size:12px;color:var(--green);border:1px solid var(--border);">
+        Aucun impayé à reporter vers ${currentYear+1} ✓
+       </div>`;
+
+  // Récap impression
+  const recap = document.getElementById('printRecap');
+  if (recap) {
+    const impStr = reportImpayes_total > 0 ? fmt(reportImpayes_total) : '0,00 €';
+    recap.innerHTML = `
+      <table>
+        <thead><tr>
+          <th style="text-align:left;">Exercice</th>
+          <th>Report ${currentYear-1}</th>
+          <th>Cotisations</th>
+          <th>Autres recettes</th>
+          <th>Dépenses</th>
+          <th>Résultat net</th>
+          <th>Impayés</th>
+        </tr></thead>
+        <tbody><tr>
+          <td>${currentYear}</td>
+          <td style="color:${reportCaisse>=0?'#1D4E89':'#9B2226'};">${reportCaisse>=0?'+':''}${fmt(reportCaisse)}</td>
+          <td style="color:#2D6A4F;">${fmt(totalCotisations)}</td>
+          <td style="color:#2D6A4F;">${totalAutresRecettes>0?fmt(totalAutresRecettes):'—'}</td>
+          <td style="color:#9B2226;">−${fmt(totalDepenses)}</td>
+          <td style="font-weight:700;color:${soldeNet>=0?'#2D6A4F':'#9B2226'};">${soldeNet>=0?'+':''}${fmt(soldeNet)}</td>
+          <td style="color:${reportImpayes_total>0?'#9B2226':'#2D6A4F'};">${reportImpayes_total>0?impStr:'Aucun'}</td>
+        </tr></tbody>
+      </table>`;
+  }
+
+  // printYear
+  const printYearEl = document.getElementById('printYear');
+  if (printYearEl) printYearEl.textContent = currentYear;
+}
+
+function imprimerCotisations() {
+  /* Génère un tableau propre dans #cotPrintArea puis lance window.print() */
+  const montant = getMontant();
+  const actifs  = data.habitants.filter(h => isActifOnYear(h, currentYear));
+  const cots    = data.cotisations[currentYear] || {};
+  const MOIS    = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+
+  /* Construction des lignes */
+  let rows = '';
+  actifs.forEach(h => {
+    const moisActifs = Array.from({length:12}, (_,i) => isActifOnMonth(h, currentYear, i+1));
+    let cells = '';
+    for (let m = 0; m < 12; m++) {
+      const ok = (cots[h.id]||[])[m];
+      if (!moisActifs[m]) {
+        cells += '<td class="absent">&#8212;</td>';
+      } else {
+        cells += '<td class="' + (ok ? 'paye' : 'nonpaye') + '">' + (ok ? '&#10003;' : '&#9675;') + '</td>';
+      }
+    }
+    rows += '<tr><td class="nom">' + h.nom + '</td>' + cells + '</tr>';
+  });
+
+  /* Injecter dans la zone d'impression */
+  const zone = document.getElementById('cotPrintArea');
+  zone.innerHTML =
+    '<div class="cot-print-header">' +
+      '<div>' +
+        '<div class="cot-print-title">Batarelle J2</div>' +
+        '<div class="cot-print-sub">Cotisations ' + currentYear + ' &mdash; Mensualit&eacute; : ' + fmt(montant) + '</div>' +
+      '</div>' +
+      '<div class="cot-print-contact">' +
+        '<strong>Marouane Bouchaouata</strong>' +
+        '<span>07 81 20 31 83</span>' +
+        '<span>marouane.bouchaouata@gmail.com</span>' +
+      '</div>' +
+    '</div>' +
+    '<table class="cot-print-table"><thead><tr>' +
+      '<th>Habitant</th>' +
+      MOIS.map(m => '<th>' + m + '</th>').join('') +
+    '</tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="cot-print-footer">' +
+      '<span><strong>L&eacute;gende :</strong> &nbsp;&#10003; Pay&eacute; &nbsp;&nbsp;&#9675; Non pay&eacute; &nbsp;&nbsp;&#8212; Absent</span>' +
+      '<span>Imprim&eacute; le ' + new Date().toLocaleDateString('fr-FR') + '</span>' +
+    '</div>';
+
+  document.body.classList.add('print-cotisations');
+  window.print();
+  setTimeout(function() {
+    document.body.classList.remove('print-cotisations');
+    zone.innerHTML = '';
+  }, 1500);
+}
+
+
+/* ---- TARIFS : rendu et gestion ---- */
+
+window.deleteTarif = function(id) {
+  if (!confirm('Supprimer ce tarif ?')) return;
+  data.tarifs = data.tarifs.filter(t => t.id !== id);
+  saveData(); renderTarifs(); syncTarifsToInputs();
+  renderCotisations(); renderMenage(); renderDashboard(); renderComptabilite();
+};
+
+window.editTarif = function(id) {
+  const t = data.tarifs.find(t => t.id === id);
+  if (t) openTarifModal(t, null);
+};
+
+function openTarifModal(tarif, preType) {
+  const isEdit = !!tarif;
+  document.getElementById('modalTarifTitre').textContent = isEdit ? 'Modifier le tarif' : 'Nouveau tarif';
+  document.getElementById('tarifEditId').value = isEdit ? tarif.id : '';
+  const typeEl = document.getElementById('tarifType');
+  typeEl.value = isEdit ? tarif.type : (preType || 'cotisation');
+  typeEl.disabled = !!preType && !isEdit;
+  document.getElementById('tarifMontant').value = isEdit ? tarif.montant : 0;
+  document.getElementById('tarifDateDebut').value = isEdit ? tarif.dateDebut : new Date().toISOString().slice(0,10);
+  document.getElementById('tarifNote').value = isEdit ? (tarif.note||'') : '';
+  document.getElementById('modalTarif').classList.add('open');
+}
+
+function renderTarifs() {
+  if (!data.tarifs) data.tarifs = [];
+  const today = new Date().toISOString().slice(0,10);
+  const types = ['cotisation', 'escalier', 'cave'];
+  const container = document.getElementById('tarifsActifs');
+  if (!container) return;
+  container.innerHTML = '';
+
+  types.forEach(type => {
+    const actif = getTarifActif(type, today);
+    const historique = [...data.tarifs]
+      .filter(t => t.type === type)
+      .sort((a,b) => b.dateDebut.localeCompare(a.dateDebut));
+
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-bottom:24px;';
+
+    const futur = data.tarifs.filter(t => t.type === type && t.dateDebut > today)
+      .sort((a,b) => a.dateDebut.localeCompare(b.dateDebut))[0];
+    const futurBadge = futur
+      ? `<span class="badge blue" style="font-size:10px;padding:1px 6px;margin-left:8px;">→ ${fmt(futur.montant)} dès le ${new Date(futur.dateDebut).toLocaleDateString('fr-FR')}</span>`
+      : '';
+
+    const header = document.createElement('div');
+    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-left:4px solid ${TARIF_COLORS[type]};border-radius:var(--radius-lg) var(--radius-lg) 0 0;`;
+    header.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:20px;">${TARIF_ICONS[type]}</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:${TARIF_COLORS[type]};">${TARIF_LABELS[type]}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+            Tarif actuel : <strong style="font-family:monospace;color:${TARIF_COLORS[type]};">${actif ? fmt(actif.montant) : '—'}</strong>
+            ${actif ? ` · depuis le ${new Date(actif.dateDebut).toLocaleDateString('fr-FR')}` : ''}
+            ${futurBadge}
+          </div>
+        </div>
+      </div>
+      <button class="btn primary btn-add-tarif-type" data-type="${type}" style="font-size:12px;padding:5px 12px;">+ Nouveau tarif</button>
+    `;
+    section.appendChild(header);
+
+    const tableWrap = document.createElement('div');
+    tableWrap.style.cssText = 'border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;';
+
+    if (!historique.length) {
+      tableWrap.innerHTML = '<div style="padding:16px 18px;font-size:12px;color:var(--text-muted);">Aucun tarif enregistré.</div>';
+    } else {
+      const table = document.createElement('table');
+      table.style.cssText = 'width:100%;border-collapse:collapse;font-size:13px;';
+      table.innerHTML = `<thead><tr>
+        <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg);border-bottom:1px solid var(--border);">Montant</th>
+        <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg);border-bottom:1px solid var(--border);">Applicable depuis</th>
+        <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;background:var(--bg);border-bottom:1px solid var(--border);">Note</th>
+        <th style="padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--border);width:80px;"></th>
+      </tr></thead>`;
+      const tbody2 = document.createElement('tbody');
+      historique.forEach((t, idx) => {
+        const isCurrentlyActif = actif && actif.id === t.id;
+        const isFutur = t.dateDebut > today;
+        const badgeStatut = isCurrentlyActif
+          ? '<span class="badge ok" style="font-size:10px;padding:2px 7px;margin-left:8px;">actif</span>'
+          : isFutur
+            ? '<span class="badge blue" style="font-size:10px;padding:2px 7px;margin-left:8px;">prochain</span>'
+            : '<span class="badge partial" style="font-size:10px;padding:2px 7px;margin-left:8px;opacity:.5;">ancien</span>';
+        const color = TARIF_COLORS[type] || 'var(--text-muted)';
+        const tr = document.createElement('tr');
+        tr.style.background = isCurrentlyActif ? 'rgba(45,106,79,0.04)' : isFutur ? 'rgba(29,78,137,0.04)' : '';
+        tr.innerHTML = `
+          <td style="padding:10px 14px;border-bottom:1px solid var(--border);">
+            <span style="font-family:monospace;font-weight:700;font-size:15px;color:${color};">${fmt(t.montant)}</span>
+            ${badgeStatut}
+          </td>
+          <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-family:monospace;font-size:12px;color:var(--text-muted);">
+            ${new Date(t.dateDebut).toLocaleDateString('fr-FR')}
+          </td>
+          <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-muted);">${t.note||'—'}</td>
+          <td style="padding:10px 14px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;gap:4px;">
+              <button class="delete-btn" style="color:var(--blue);" onclick="editTarif(${t.id})">✏</button>
+              <button class="delete-btn" onclick="deleteTarif(${t.id})">✕</button>
+            </div>
+          </td>`;
+        if (idx === historique.length - 1) {
+          tr.querySelectorAll('td').forEach(td => td.style.borderBottom = 'none');
+        }
+        tbody2.appendChild(tr);
+      });
+      table.appendChild(tbody2);
+      tableWrap.appendChild(table);
+    }
+    section.appendChild(tableWrap);
+    container.appendChild(section);
+  });
+
+  container.querySelectorAll('.btn-add-tarif-type').forEach(btn => {
+    btn.addEventListener('click', function() {
+      openTarifModal(null, this.dataset.type);
+    });
+  });
+
+  const tarifsBody = document.getElementById('tarifsBody');
+  if (tarifsBody) {
+    const card = tarifsBody.closest('.table-card');
+    if (card) card.style.display = 'none';
+  }
+}
+
+document.getElementById('btnAddTarif')?.addEventListener('click', () => openTarifModal(null, null));
+document.getElementById('cancelTarif')?.addEventListener('click', () => {
+  document.getElementById('tarifType').disabled = false;
+  document.getElementById('modalTarif').classList.remove('open');
+});
+document.getElementById('modalTarif')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    document.getElementById('tarifType').disabled = false;
+    this.classList.remove('open');
+  }
+});
+document.getElementById('saveTarif')?.addEventListener('click', () => {
+  const type = document.getElementById('tarifType').value;
+  const montant = parseFloat(document.getElementById('tarifMontant').value) || 0;
+  const dateDebut = document.getElementById('tarifDateDebut').value;
+  if (!dateDebut) { alert('Veuillez renseigner une date.'); return; }
+  const note = document.getElementById('tarifNote').value.trim();
+  const editId = document.getElementById('tarifEditId').value;
+  if (!data.tarifs) data.tarifs = [];
+  if (!data.nextTarifId) data.nextTarifId = (data.tarifs.length || 0) + 1;
+  const payload = { type, montant, dateDebut, note };
+  if (editId) {
+    const idx = data.tarifs.findIndex(t => t.id === parseInt(editId));
+    if (idx !== -1) data.tarifs[idx] = { ...data.tarifs[idx], ...payload };
+  } else {
+    data.tarifs.push({ id: data.nextTarifId++, ...payload });
+  }
+  saveData();
+  document.getElementById('tarifType').disabled = false;
+  document.getElementById('modalTarif').classList.remove('open');
+  renderTarifs(); syncTarifsToInputs();
+  renderCotisations(); renderMenage(); renderDashboard(); renderComptabilite();
+});
+
+function renderAll() {
+  updateNavForYear();
+  syncTarifsToInputs();
+  renderDashboard();
+  renderCotisations();
+  renderDepenses();
+  renderMenage();
+  renderHabitants();
+  renderComptabilite();
+  renderTarifs();
+}
+renderAll();
+
+  /* ============================================================
+     SERVICE WORKER - Enregistrement pour PWA / offline
+     ============================================================ */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW enregistré:', reg.scope))
+        .catch(err => console.log('SW erreur:', err));
+    });
+  }
+
+  /* Gérer le paramètre ?tab= dans l'URL (shortcuts PWA) */
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  if (tabParam) {
+    setTimeout(() => switchTab(tabParam), 100);
+  }
+
+</script>
+</body>
+</html>
